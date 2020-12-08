@@ -3,11 +3,11 @@
     <v-container class="fill-height">
       <!-- <animatedText /> -->
       <v-row cols="12" class="baseContent">
-        <v-col cols="3">
+        <v-col cols="3" class="swStyle">
           <v-list>
             <v-list-item-title class="text-center"><h2>Mots</h2></v-list-item-title>
             <v-list-item
-              class="itemList"
+              class="itemList justify-center"
               v-for="(word, index) in wordListDisp"
               @click="word.visible = !word.visible"
               :key="index"
@@ -19,22 +19,25 @@
           </v-list>
         </v-col>
         <v-col cols="6" align-self="center">
-          <div class="CaBFont text-center">
-            <span v-for="(n, i) in wordPlayed" :id="'letterAnim' + i" :key="i">{{ n }}</span>
+          <div class="text-center pointsAdding">
+            <span v-for="(point, index) in pointsAdded" :key="index" class="bounceFromTop"> +{{ point }}</span>
+          </div>
+          <div :class="['CaBFont text-center swStyle', wrongWord ? 'blurOut' : '']">
+            <span v-for="(n, i) in wordPlayed" :id="'letterAnim' + i" :class="'zoomInBottom'" :key="i">{{ n }}</span>
           </div>
         </v-col>
-        <v-col cols="3">
-          <v-list>
+        <v-col cols="3" class="swStyle">
+          <v-list class="pb-5">
             <v-list-item-title class="text-center"><h2>Bonus</h2></v-list-item-title>
             <v-list-item class="justify-center"> </v-list-item>
             <v-list-item :class="['justify-center', superSuiteBonus > 0 ? 'font-weight-black' : '']"
               >Super Suite</v-list-item
             >
-            <v-list-item class="justify-center ma-0" v-if="superSuiteBonus > 0"> {{ superSuiteBonus }}</v-list-item>
+            <v-list-item class="justify-center ma-0" v-if="superSuiteBonus > 0"> +{{ superSuiteBonus }}</v-list-item>
             <v-list-item :class="['justify-center', superShrinkBonus > 0 ? 'font-weight-black' : '']"
               >Super Shrink</v-list-item
             >
-            <v-list-item :class="'justify-center'" v-if="superShrinkBonus > 0">{{ superShrinkBonus }}</v-list-item>
+            <v-list-item :class="'justify-center'" v-if="superShrinkBonus > 0">+{{ superShrinkBonus }}</v-list-item>
             <v-list-item
               :class="[
                 'justify-center',
@@ -43,39 +46,32 @@
               >Palindrome</v-list-item
             >
             <v-list-item v-if="isPalindrome(wordPlayed) > 5 && wordPlayed !== '' && !isTyping" :class="'justify-center'"
-              >10</v-list-item
+              >+10</v-list-item
             >
             <v-list-item :class="['justify-center', totalLetters(wordPlayed) && !isTyping ? 'font-weight-black' : '']"
               >Score</v-list-item
             >
             <v-list-item :class="'justify-center'">{{ totalLetters(wordPlayed) }}</v-list-item>
           </v-list>
-          <v-list>
-            <v-list-item :class="'justify-center'" v-for="(point, index) in pointsAdded" :key="index">
-              + {{ point }}
-            </v-list-item>
-          </v-list>
         </v-col>
       </v-row>
       <v-row cols="12">
-        <v-col cols="3" class="text-center" align-self="center">
-          <h2>Joueur</h2>
+        <v-col cols="3" class="text-center swStyle" align-self="center">
+          <h2>Player</h2>
           <h3>{{ playerPoints }}</h3></v-col
         >
         <v-col cols="6">
-          <v-text-field
+          <input
+            type="text"
             autocomplete="false"
-            color="#ED531D"
-            outlined
+            :class="['swStyle', wrongWord ? 'quietMad' : '']"
             v-model="wordInput"
             @keypress.enter="addWord(wordInput)"
-            append-icon="mdi-send"
             @click:append="addWord(wordInput)"
-          >
-          </v-text-field>
+          />
         </v-col>
-        <v-col cols="3" class="text-center" align-self="center">
-          <h2>Ordinateur</h2>
+        <v-col cols="3" class="text-center swStyle" align-self="center">
+          <h2>Computer</h2>
 
           <h3>{{ comPoints }}</h3></v-col
         >
@@ -85,6 +81,7 @@
 </template>
 
 <script>
+import mojs from '@mojs/core'
 // import animate from 'animateplus'
 import axios from 'axios'
 // import animatedText from './components/animateText.vue'
@@ -114,6 +111,7 @@ export default {
     index: 0,
     apiKey: 'IqzLv8qEfjZyEG1gXUiDw-X5oAgX5wWe',
     wordIndex: 0,
+    wrongWord: false,
 
     //Points
     playerPoints: 0,
@@ -126,10 +124,25 @@ export default {
     //Audios
     keyStroke: require('./assets/audio/keyStroke.mp3'),
     pop: require('./assets/audio/pop.mp3'),
+    woosh: require('./assets/audio/woosh.mp3'),
     // keyStroke: require('./assets/audio/BoomBoom.mp3'),
+
+    //Animation tests
   }),
   watch: {},
   methods: {
+    wordFail() {
+      this.wrongWord = true
+      setTimeout(() => {
+        this.wrongWord = false
+        this.wordPlayed = ''
+        this.calcPoints = 0
+        this.superSuiteBonus = 0
+        this.superShrinkBonus = 0
+        this.wordInput = ''
+        this.pointsAdded = []
+      }, 500)
+    },
     playAtDuring(audio, at, during) {
       // console.log('at = ' + at)
       // console.log('during = ' + during)
@@ -149,7 +162,7 @@ export default {
     },
     isGreaterOrTinierWord(firstWord, secondWord) {
       if (this.wordList.length > 1) {
-        if (firstWord.length === secondWord.length + 1 || firstWord.length === secondWord.length - 1) {
+        if (firstWord.length + 1 === secondWord.length || firstWord.length - 1 === secondWord.length) {
           if (this.superShrinkBonus === 0) {
             this.superShrinkBonus = 5
           } else {
@@ -172,10 +185,12 @@ export default {
       }, 3000)
     },
     isAdjacentLetter(firstWord, secondWord) {
+      console.log('First Word = ' + firstWord)
+      console.log('Second Word = ' + secondWord)
       if (this.wordList.length > 2) {
         if (
-          this.letters.indexOf(firstWord[0]) === this.letters.indexOf(secondWord[0]) + 1 ||
-          this.letters.indexOf(firstWord[0]) === this.letters.indexOf(secondWord[0]) - 1
+          this.letters.indexOf(firstWord[0]) + 1 === this.letters.indexOf(secondWord[0]) ||
+          this.letters.indexOf(firstWord[0]) - 1 === this.letters.indexOf(secondWord[0])
         ) {
           if (this.superSuiteBonus === 0) {
             this.superSuiteBonus = 5
@@ -183,8 +198,10 @@ export default {
             this.superSuiteBonus *= 2
             this.calcPoints += this.superSuiteBonus
           }
+          return true
         } else {
           this.superSuiteBonus = 0
+          return false
         }
       }
     },
@@ -240,6 +257,7 @@ export default {
           if (response.data.query.searchinfo.totalhits === 0) {
             // Le mot est inconnu
             console.log("Ce mot n'existe pas... tête de fion.")
+            this.wordFail()
           } else {
             let wordObj = {
               index: this.wordList.length,
@@ -288,11 +306,11 @@ export default {
       //Ajout du nombre de points Scrabble
       // this.calcPoints += this.totalLetters(this.wordPlayed)
 
-      //Est-ce que le mot est commence par une lettre qui suit la lettre du dernier mot
-      this.isAdjacentLetter(this.wordList[0], this.wordList[1])
+      //Est-ce que le mot commence par une lettre qui suit la lettre du dernier mot
+      this.isAdjacentLetter(this.wordList[this.wordList.length - 1], this.wordList[this.wordList.length - 2])
 
       //Est-ce que le mot est plus grand que le mot précédant
-      this.isGreaterOrTinierWord(this.wordList[0], this.wordList[1])
+      this.isGreaterOrTinierWord(this.wordList[this.wordList.length - 1], this.wordList[this.wordList.length - 2])
     },
 
     // Fonction du dispay de l"écriture
@@ -315,11 +333,11 @@ export default {
         this.wordPlayed = this.wordPlayed + this.removeAccents(this.refWord.charAt(this.index))
         this.addPoint(this.wordPlayed.charAt(this.index))
         this.index++
-        this.playAtDuring(this.keyStroke)
+        this.playAtDuring(this.woosh)
         setTimeout(this.typeWriter, this.randomDelay(300))
       } else if (this.index === this.refWord.length) {
         // Le typing du mot est terminé
-
+        this.pointsCount()
         // this.wordList.push(this.refWord)
         this.refWord = ''
         this.isTyping = false
@@ -362,20 +380,75 @@ export default {
 }
 </script>
 <style lang="stylus">
+@import url('assets/styles/cssanimation.css')
 // @import url('./assets/doctor punk.otf')
 @import url('//db.onlinewebfonts.com/c/0541dc5e4a0066762f6473dbe1c28092?family=JD + Scarabeo')
+
+@font-face
+  font-family roadRage
+  src url('./assets/fonts/Road_Rage.otf') format('opentype')
 
 @font-face
   font-family 'JD Scarabeo' // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.eot"); src: url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.eot?#iefix") format("embedded-opentype"), url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff2") format("woff2"), url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff") format("woff"), url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf") format("truetype"), url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo") format("svg"); }
   src url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg')
 
 html
+  text-shadow 0 0 2px #8C1EFF, 0 0 3px #8C1EFF99, 0 0 5px #8C1EFF99, 0 0 10px #8C1EFF99
+  color #8C1EFF99
+
+  div.v-list.v-sheet.theme--light
+    background-color #ff901f99
+    border 1px solid #ff901f
+    border-radius 4px
+
+  div.swStyle
+    background-color #ff297521
+    border 1px solid #ff2975
+    border-radius 4px
+    font-family roadRage
+
+  input.swStyle
+    width 100%
+    // height 80px
+    font-size 3rem
+    background-color #ff297521
+    border 1px solid #ff2975
+    border-radius 4px
+    font-family roadRage
+    text-indent 1em
+
+    &:focus
+      outline inherit
+
+  #app
+    background-image url('./assets/images/synthWall.jpg')
+    background-position top
+
   .CaBFont
     font-family 'JD Scarabeo'
     font-size 60px
 
+    span
+      display inline-flex
+
+    &.blurOut
+      animation blurOut 0.5s
+
+    &.zoomOut
+      animation zoomOut 0.5ms
+
+  div.pointsAdding
+    min-height 24px
+
+    span
+      width 28px
+      display inline-flex
+
   div.baseContent
     height 80%
+
+div.v-list-item
+  min-height 13px
 
 div.itemList
   position relative
@@ -384,7 +457,16 @@ div.itemList
     position absolute
     width 30em
     padding 6px 5px
-    background-color antiquewhite
     border-radius 10px
     left 10em
+
+// animations
+span.zoomInBottom
+  animation zoomInBottom 0.25s
+
+div.quietMad
+  animation quietMad 1s infinite
+
+span.bounceFromTop
+  animation bounceFromTop 0.25s
 </style>

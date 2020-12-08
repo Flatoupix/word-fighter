@@ -20,10 +20,18 @@
 ---
 
 - Multi-joueurs
-- Ajout d'un shake quand un mot n'est pas bon
-- Ajout de couleurs et d'effets de bonus
-- Ajout de sons
 
 ---
 
 ## Changelog
+
+@ 0.0.2
+
+- Ajout d'un shake quand un mot n'est pas bon
+- Ajout de couleurs et d'effets de bonus
+- Ajout de sons
+- Ajout d'un theme synthWave
+
+@ 0.0.1
+
+- first init
