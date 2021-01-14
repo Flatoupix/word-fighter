@@ -1,7 +1,6 @@
 <template>
   <v-app>
     <v-container class="fill-height">
-      <!-- <animatedText /> -->
       <v-row cols="12" class="baseContent">
         <v-col cols="3" class="swStyle">
           <v-list>
@@ -18,11 +17,15 @@
             </v-list-item>
           </v-list>
         </v-col>
-        <v-col cols="6" align-self="center">
+        <v-col cols="6" class="relative" align-self="strech">
+          <div v-if="wrongWord" class="text-center txtInfos zoomIn">FAIIIL</div>
           <div class="text-center pointsAdding">
             <span v-for="(point, index) in pointsAdded" :key="index" class="bounceFromTop"> +{{ point }}</span>
           </div>
-          <div :class="['CaBFont text-center swStyle', wrongWord ? 'blurOut' : '']">
+          <div
+            :style="'fontSize:' + dynamicFontSize"
+            :class="['CaBFont text-center swStyle', wrongWord ? 'blurOut' : '']"
+          >
             <span v-for="(n, i) in wordPlayed" :id="'letterAnim' + i" :class="'zoomInBottom'" :key="i">{{ n }}</span>
           </div>
         </v-col>
@@ -131,6 +134,10 @@ export default {
   }),
   watch: {},
   methods: {
+    wordResize() {
+      if (this.wordPlayed.length <= 12) {
+      }
+    },
     wordFail() {
       this.wrongWord = true
       setTimeout(() => {
@@ -374,6 +381,20 @@ export default {
       }
     },
   },
+  computed: {
+    dynamicFontSize() {
+      if (this.wordPlayed.length > 12) {
+        let multiplier = (this.wordPlayed.length - 12) * 0.2
+        let defaultSize = 3
+
+        let finalSize = defaultSize - multiplier
+
+        return finalSize + 'em'
+      } else {
+        return '3em'
+      }
+    },
+  },
   created() {
     this.comPlay()
   },
@@ -395,6 +416,18 @@ export default {
 html
   text-shadow 0 0 2px #8C1EFF, 0 0 3px #8C1EFF99, 0 0 5px #8C1EFF99, 0 0 10px #8C1EFF99
   color #8C1EFF99
+
+  div.v-list-item__title
+    font-size 1.7rem
+
+  div.txtInfos
+    font-family roadRage
+    font-size 7rem
+    color #ffd319
+    text-shadow 0 0 2px #ffc107, 0 0 3px #ffc107, 0 0 5px #ffc10799, 0 0 10px #ffc10773
+
+    &.zoomIn
+      animation zoomIn 500ms
 
   div.v-list.v-sheet.theme--light
     background-color #ff901f99
@@ -464,7 +497,7 @@ div.itemList
 span.zoomInBottom
   animation zoomInBottom 0.25s
 
-div.quietMad
+input.quietMad
   animation quietMad 1s infinite
 
 span.bounceFromTop

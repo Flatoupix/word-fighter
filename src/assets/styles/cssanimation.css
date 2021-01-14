@@ -2965,7 +2965,7 @@ Perspective
 /*************************************************************
 Zoom In
 **************************************************************/
-.zoomIn { animation-name: zoomIn }
+/* .zoomIn { animation: zoomIn 0.25s } */
 @keyframes zoomIn {
     from {
         transform: scale(10);
