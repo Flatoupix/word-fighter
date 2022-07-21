@@ -1,4 +1,4 @@
-# Word Fighter
+# [Word Fighter](dist/)
 
 #### Le jeu constsite à entrer une série de mot en marquant le plus de point possible.
 
