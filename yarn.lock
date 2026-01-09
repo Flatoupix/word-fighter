@@ -1025,12 +1025,6 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@mojs/core@^0.288.2":
-  version "0.288.2"
-  resolved "https://registry.yarnpkg.com/@mojs/core/-/core-0.288.2.tgz#3011145672a01c694fbd247b90f4a4a2b216905b"
-  integrity sha512-WBkiwvn14GcHfMyUuLJ0irJlTjv/Lc3jha67npYw04bG6AxATRR+Uyb9x5TkTlJAwCFLhfhLLLe5EeZoiaqiZw==
-  dependencies:
-    babel-runtime "^6.5.0"
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
@@ -1712,10 +1706,6 @@ alphanum-sort@^1.0.0:
   resolved "https://registry.yarnpkg.com/alphanum-sort/-/alphanum-sort-1.0.2.tgz#97a1119649b211ad33691d9f9f486a8ec9fbe0a3"
   integrity sha512-0FcBfdcmaumGPQ0qPn7Q5qTgz/ooXgIyp1rf8ik5bGX8mpE2YHjC0P/eyQvxu1GURYQgq9ozf2mteQ5ZD9YiyQ==
 
-animateplus@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/animateplus/-/animateplus-2.1.1.tgz#9669dcd44e85e98d2d202d962a77c4afc516777a"
-  integrity sha512-GWYf8v00UsHlfp1j8YVUdp/a6HMhJs2Mkn6Hioco6q8ybIM0Vu1Afphc0/phPChFY1nz9Wet0XC4gRVxiPaaDQ==
 
 ansi-colors@^3.0.0:
   version "3.2.4"

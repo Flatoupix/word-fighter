@@ -84,17 +84,10 @@
 </template>
 
 <script>
-import mojs from '@mojs/core'
-// import animate from 'animateplus'
 import axios from 'axios'
-// import animatedText from './components/animateText.vue'
 
 export default {
   name: 'App',
-
-  components: {
-    // animatedText,
-  },
 
   data: () => ({
     //Pattern de comptage
@@ -105,15 +98,12 @@ export default {
     wordInput: '',
     wordList: [],
     wordListDisp: [],
-    textTyping: '',
-    rdmWord: '',
     refWord: '',
     isTyping: false,
     wordPlayed: '',
     computerTurn: true,
     index: 0,
     apiKey: 'IqzLv8qEfjZyEG1gXUiDw-X5oAgX5wWe',
-    wordIndex: 0,
     wrongWord: false,
 
     //Points
@@ -125,19 +115,11 @@ export default {
     pointsAdded: [],
 
     //Audios
-    keyStroke: require('./assets/audio/keyStroke.mp3'),
-    pop: require('./assets/audio/pop.mp3'),
     woosh: require('./assets/audio/woosh.mp3'),
-    // keyStroke: require('./assets/audio/BoomBoom.mp3'),
 
     //Animation tests
   }),
-  watch: {},
   methods: {
-    wordResize() {
-      if (this.wordPlayed.length <= 12) {
-      }
-    },
     wordFail() {
       this.wrongWord = true
       setTimeout(() => {
@@ -188,13 +170,12 @@ export default {
       this.calcPoints += letter.points
       setTimeout(() => {
         this.pointsAdded.shift()
-        // this.playAtDuring(this.pop)
       }, 3000)
     },
     isAdjacentLetter(firstWord, secondWord) {
       console.log('First Word = ' + firstWord)
       console.log('Second Word = ' + secondWord)
-      if (this.wordList.length > 2) {
+      if (this.wordList.length > 1) {
         if (
           this.letters.indexOf(firstWord[0]) + 1 === this.letters.indexOf(secondWord[0]) ||
           this.letters.indexOf(firstWord[0]) - 1 === this.letters.indexOf(secondWord[0])
@@ -287,10 +268,8 @@ export default {
         })
     },
     comPlay() {
-      let stop = false
-
-      if (this.isTyping === false && !stop) {
-        setTimeout(this.getWord(), 4000)
+      if (this.isTyping === false) {
+        setTimeout(() => this.getWord(), 4000)
       }
     },
     addWord(word) {
@@ -304,7 +283,9 @@ export default {
     pointsCount() {
       //On ajoute les points de l'écart entre les premières lettres de chaque mots.
       if (this.wordList.length > 1) {
-        this.calcPoints += this.howManyLettersBetween(this.wordList[0], this.wordList[1])
+        const lastIndex = this.wordList.length - 1
+        const prevIndex = lastIndex - 1
+        this.calcPoints += this.howManyLettersBetween(this.wordList[lastIndex], this.wordList[prevIndex])
         console.log('bonus hmlb + ' + this.calcPoints)
       }
       // Est-ce un palindrome ?
@@ -341,7 +322,7 @@ export default {
         this.addPoint(this.wordPlayed.charAt(this.index))
         this.index++
         this.playAtDuring(this.woosh)
-        setTimeout(this.typeWriter, this.randomDelay(300))
+        setTimeout(() => this.typeWriter(), this.randomDelay(300))
       } else if (this.index === this.refWord.length) {
         // Le typing du mot est terminé
         this.pointsCount()
@@ -377,8 +358,8 @@ export default {
         if ((x = accents.indexOf(str[i])) != -1) {
           str[i] = accentsOut[x]
         }
-        return str.join('')
       }
+      return str.join('')
     },
   },
   computed: {
@@ -402,7 +383,6 @@ export default {
 </script>
 <style lang="stylus">
 @import url('assets/styles/cssanimation.css')
-// @import url('./assets/doctor punk.otf')
 @import url('//db.onlinewebfonts.com/c/0541dc5e4a0066762f6473dbe1c28092?family=JD + Scarabeo')
 
 @font-face
