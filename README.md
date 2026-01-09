@@ -21,8 +21,8 @@
 
 ### Déroulé d'une partie
 
-- L'ordinateur démarre avec un mot aléatoire (API Dicolink).
-- Le joueur saisit un mot; il est validé via Wiktionary.
+- L'ordinateur démarre avec un mot aléatoire (mock local).
+- Le joueur saisit un mot; il est validé via une règle locale (mock).
 - Si le mot est valide, il s'affiche dans la liste et se "tape" en lettres animées.
 - Le score est ajouté au joueur ou à l'ordinateur selon le tour.
 - Pas de condition de fin dans l'état actuel (partie continue).
@@ -71,6 +71,17 @@
 - Dictionnaires alternatifs (thèmes, langues).
 - Mode entraînement + statistiques avancées.
 - Customisation visuelle (thèmes, skins).
+
+---
+
+## Dev (Vite + Tailwind)
+
+---
+
+- `yarn install`
+- `yarn dev`
+- `yarn build`
+- `yarn preview`
 
 ---
 

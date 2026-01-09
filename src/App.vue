@@ -1,485 +1,405 @@
 <template>
-  <v-app>
-    <v-container class="fill-height">
-      <v-row cols="12" class="baseContent">
-        <v-col cols="3" class="swStyle">
-          <v-list>
-            <v-list-item-title class="text-center"><h2>Mots</h2></v-list-item-title>
-            <v-list-item
-              class="itemList justify-center"
-              v-for="(word, index) in wordListDisp"
-              @click="word.visible = !word.visible"
-              :key="index"
-              :ripple="false"
-            >
-              {{ word.text }}
-              <div class="wordDescription" v-if="word.visible" v-html="word.description"></div>
-            </v-list-item>
-          </v-list>
-        </v-col>
-        <v-col cols="6" class="relative" align-self="strech">
-          <div v-if="wrongWord" class="text-center txtInfos zoomIn">FAIIIL</div>
-          <div class="text-center pointsAdding">
-            <span v-for="(point, index) in pointsAdded" :key="index" class="bounceFromTop"> +{{ point }}</span>
+  <div class="min-h-screen text-neon-yellow">
+    <div class="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-4 py-6 text-glow fade-in">
+      <header class="text-center">
+        <h1 class="font-display text-5xl tracking-wide text-neon-purple">Word Fighter</h1>
+        <p class="mt-2 text-sm text-neon-yellow/80">Tape un mot pour marquer des points.</p>
+      </header>
+
+      <section class="grid gap-4 md:grid-cols-3">
+        <aside class="panel">
+          <h2 class="panel-title">Mots</h2>
+          <ul class="mt-3 space-y-2">
+            <li v-for="(word, index) in wordListDisp" :key="index">
+              <button type="button" class="word-item" @click="word.visible = !word.visible">
+                {{ word.text }}
+              </button>
+              <p v-if="word.visible && word.description" class="mt-1 text-sm text-neon-orange/90">
+                {{ word.description }}
+              </p>
+            </li>
+          </ul>
+        </aside>
+
+        <main class="panel flex flex-col justify-center gap-2">
+          <div v-if="wrongWord" class="text-center font-display text-6xl text-neon-yellow zoomIn">
+            FAIIIL
+          </div>
+          <div class="min-h-[1.5rem] text-center text-neon-yellow/80">
+            <span v-for="(point, index) in pointsAdded" :key="index" class="bounceFromTop inline-flex px-1">
+              +{{ point }}
+            </span>
           </div>
           <div
-            :style="'fontSize:' + dynamicFontSize"
-            :class="['CaBFont text-center swStyle', wrongWord ? 'blurOut' : '']"
+            class="text-center font-accent"
+            :class="{ blurOut: wrongWord }"
+            :style="{ fontSize: dynamicFontSize }"
           >
-            <span v-for="(n, i) in wordPlayed" :id="'letterAnim' + i" :class="'zoomInBottom'" :key="i">{{ n }}</span>
+            <span v-for="(letter, i) in wordChars" :key="i" class="zoomInBottom inline-flex">
+              {{ letter }}
+            </span>
           </div>
-        </v-col>
-        <v-col cols="3" class="swStyle">
-          <v-list class="pb-5">
-            <v-list-item-title class="text-center"><h2>Bonus</h2></v-list-item-title>
-            <v-list-item class="justify-center"> </v-list-item>
-            <v-list-item :class="['justify-center', superSuiteBonus > 0 ? 'font-weight-black' : '']"
-              >Super Suite</v-list-item
-            >
-            <v-list-item class="justify-center ma-0" v-if="superSuiteBonus > 0"> +{{ superSuiteBonus }}</v-list-item>
-            <v-list-item :class="['justify-center', superShrinkBonus > 0 ? 'font-weight-black' : '']"
-              >Super Shrink</v-list-item
-            >
-            <v-list-item :class="'justify-center'" v-if="superShrinkBonus > 0">+{{ superShrinkBonus }}</v-list-item>
-            <v-list-item
-              :class="[
-                'justify-center',
-                isPalindrome(wordPlayed) > 5 && wordPlayed !== '' && !isTyping ? 'font-weight-black' : '',
-              ]"
-              >Palindrome</v-list-item
-            >
-            <v-list-item v-if="isPalindrome(wordPlayed) > 5 && wordPlayed !== '' && !isTyping" :class="'justify-center'"
-              >+10</v-list-item
-            >
-            <v-list-item :class="['justify-center', totalLetters(wordPlayed) && !isTyping ? 'font-weight-black' : '']"
-              >Score</v-list-item
-            >
-            <v-list-item :class="'justify-center'">{{ totalLetters(wordPlayed) }}</v-list-item>
-          </v-list>
-        </v-col>
-      </v-row>
-      <v-row cols="12">
-        <v-col cols="3" class="text-center swStyle" align-self="center">
-          <h2>Player</h2>
-          <h3>{{ playerPoints }}</h3></v-col
-        >
-        <v-col cols="6">
-          <input
-            type="text"
-            autocomplete="false"
-            :class="['swStyle', wrongWord ? 'quietMad' : '']"
-            v-model="wordInput"
-            @keypress.enter="addWord(wordInput)"
-            @click:append="addWord(wordInput)"
-          />
-        </v-col>
-        <v-col cols="3" class="text-center swStyle" align-self="center">
-          <h2>Computer</h2>
+        </main>
 
-          <h3>{{ comPoints }}</h3></v-col
-        >
-      </v-row>
-    </v-container>
-  </v-app>
+        <aside class="panel">
+          <h2 class="panel-title">Bonus</h2>
+          <div class="mt-3 space-y-3 text-center">
+            <div>
+              <div
+                :class="[
+                  'font-display text-xl',
+                  superSuiteBonus > 0 ? 'text-neon-yellow' : 'text-neon-yellow/60',
+                ]"
+              >
+                Super Suite
+              </div>
+              <div v-if="superSuiteBonus > 0" class="font-display text-neon-orange">+{{ superSuiteBonus }}</div>
+            </div>
+            <div>
+              <div
+                :class="[
+                  'font-display text-xl',
+                  superShrinkBonus > 0 ? 'text-neon-yellow' : 'text-neon-yellow/60',
+                ]"
+              >
+                Super Shrink
+              </div>
+              <div v-if="superShrinkBonus > 0" class="font-display text-neon-orange">+{{ superShrinkBonus }}</div>
+            </div>
+            <div>
+              <div
+                :class="[
+                  'font-display text-xl',
+                  isPalindrome(wordPlayed) > 5 && wordPlayed !== '' && !isTyping
+                    ? 'text-neon-yellow'
+                    : 'text-neon-yellow/60',
+                ]"
+              >
+                Palindrome
+              </div>
+              <div
+                v-if="isPalindrome(wordPlayed) > 5 && wordPlayed !== '' && !isTyping"
+                class="font-display text-neon-orange"
+              >
+                +10
+              </div>
+            </div>
+            <div>
+              <div
+                :class="[
+                  'font-display text-xl',
+                  totalLetters(wordPlayed) > 0 && !isTyping ? 'text-neon-yellow' : 'text-neon-yellow/60',
+                ]"
+              >
+                Score
+              </div>
+              <div class="font-display text-neon-orange">{{ totalLetters(wordPlayed) }}</div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="grid gap-4 md:grid-cols-[1fr_2fr_1fr]">
+        <div class="panel text-center">
+          <h2 class="font-display text-xl text-neon-orange">Player</h2>
+          <div class="score">{{ playerPoints }}</div>
+        </div>
+        <div class="panel">
+          <input
+            v-model="wordInput"
+            type="text"
+            autocomplete="off"
+            :class="['input-field', wrongWord ? 'quietMad' : '']"
+            @keydown.enter.prevent="addWord(wordInput)"
+            placeholder="Tape ton mot..."
+          />
+        </div>
+        <div class="panel text-center">
+          <h2 class="font-display text-xl text-neon-orange">Computer</h2>
+          <div class="score">{{ comPoints }}</div>
+        </div>
+      </section>
+    </div>
+  </div>
 </template>
 
-<script>
-import axios from 'axios'
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import scrabble from './assets/scrabble.json'
+import wooshUrl from './assets/audio/woosh.mp3'
 
-export default {
-  name: 'App',
+const letters = 'abcdefghijklmnopqrstuvwxyz'
+const objectLetters = scrabble.letters
 
-  data: () => ({
-    //Pattern de comptage
-    letters: 'abcdefghijklmnopqrstuvwxyz',
-    objectLetters: require('./assets/scrabble.json').letters,
+const mockWords = [
+  'synth',
+  'laser',
+  'arcade',
+  'pixel',
+  'runner',
+  'vapor',
+  'glitch',
+  'neon',
+  'tempo',
+  'omega',
+  'alpha',
+  'orbit',
+  'signal',
+  'circuit',
+  'vector',
+  'matrix',
+]
 
-    //Variables de jeu
-    wordInput: '',
-    wordList: [],
-    wordListDisp: [],
-    refWord: '',
-    isTyping: false,
-    wordPlayed: '',
-    computerTurn: true,
-    index: 0,
-    apiKey: 'IqzLv8qEfjZyEG1gXUiDw-X5oAgX5wWe',
-    wrongWord: false,
+const wordInput = ref('')
+const wordList = ref([])
+const wordListDisp = ref([])
+const refWord = ref('')
+const isTyping = ref(false)
+const wordPlayed = ref('')
+const computerTurn = ref(true)
+const index = ref(0)
+const wrongWord = ref(false)
 
-    //Points
-    playerPoints: 0,
-    comPoints: 0,
-    calcPoints: 0,
-    superSuiteBonus: 0,
-    superShrinkBonus: 0,
-    pointsAdded: [],
+const playerPoints = ref(0)
+const comPoints = ref(0)
+const calcPoints = ref(0)
+const superSuiteBonus = ref(0)
+const superShrinkBonus = ref(0)
+const pointsAdded = ref([])
 
-    //Audios
-    woosh: require('./assets/audio/woosh.mp3'),
+const wordChars = computed(() => wordPlayed.value.split(''))
+const dynamicFontSize = computed(() => {
+  if (wordPlayed.value.length > 12) {
+    const multiplier = (wordPlayed.value.length - 12) * 0.2
+    const defaultSize = 3
+    const finalSize = defaultSize - multiplier
+    return `${finalSize}em`
+  }
+  return '3em'
+})
 
-    //Animation tests
-  }),
-  methods: {
-    wordFail() {
-      this.wrongWord = true
-      setTimeout(() => {
-        this.wrongWord = false
-        this.wordPlayed = ''
-        this.calcPoints = 0
-        this.superSuiteBonus = 0
-        this.superShrinkBonus = 0
-        this.wordInput = ''
-        this.pointsAdded = []
-      }, 500)
-    },
-    playAtDuring(audio, at, during) {
-      // console.log('at = ' + at)
-      // console.log('during = ' + during)
-
-      let audioPlay = new Audio(audio)
-
-      if (at !== undefined) {
-        audioPlay.currentTime = at
-      }
-      audioPlay.play()
-
-      if (during !== undefined) {
-        setTimeout(() => {
-          audioPlay.pause()
-        }, during)
-      }
-    },
-    isGreaterOrTinierWord(firstWord, secondWord) {
-      if (this.wordList.length > 1) {
-        if (firstWord.length + 1 === secondWord.length || firstWord.length - 1 === secondWord.length) {
-          if (this.superShrinkBonus === 0) {
-            this.superShrinkBonus = 5
-          } else {
-            this.superShrinkBonus *= 2
-            this.calcPoints += this.superShrinkBonus
-          }
-        } else {
-          this.superShrinkBonus = 0
-        }
-      }
-    },
-    addPoint(currentLetter) {
-      let letter = this.objectLetters[currentLetter]
-
-      this.pointsAdded.push(letter.points)
-      this.calcPoints += letter.points
-      setTimeout(() => {
-        this.pointsAdded.shift()
-      }, 3000)
-    },
-    isAdjacentLetter(firstWord, secondWord) {
-      console.log('First Word = ' + firstWord)
-      console.log('Second Word = ' + secondWord)
-      if (this.wordList.length > 1) {
-        if (
-          this.letters.indexOf(firstWord[0]) + 1 === this.letters.indexOf(secondWord[0]) ||
-          this.letters.indexOf(firstWord[0]) - 1 === this.letters.indexOf(secondWord[0])
-        ) {
-          if (this.superSuiteBonus === 0) {
-            this.superSuiteBonus = 5
-          } else {
-            this.superSuiteBonus *= 2
-            this.calcPoints += this.superSuiteBonus
-          }
-          return true
-        } else {
-          this.superSuiteBonus = 0
-          return false
-        }
-      }
-    },
-    isPalindrome(word) {
-      if (word.split('').reverse().join('') === word) {
-        return 10
-      } else {
-        return 0
-      }
-    },
-    totalLetters(word) {
-      let totalPoints = 0
-      for (let i = 0; i < word.length; i++) {
-        const element = word[i]
-        this.objectLetters[element].points
-        totalPoints += this.objectLetters[element].points
-      }
-      return totalPoints
-    },
-    howManyLettersBetween(firstWord, secondWord) {
-      if (this.letters.indexOf(firstWord[0]) - this.letters.indexOf(secondWord[0]) > 1) {
-        return this.letters.indexOf(firstWord[0]) - this.letters.indexOf(secondWord[0])
-      } else {
-        return this.letters.indexOf(secondWord[0]) - this.letters.indexOf(firstWord[0])
-      }
-    },
-    getWord() {
-      axios
-        .get(
-          'https://api.dicolink.com/v1/mots/motauhasard?avecdef=false&minlong=4&maxlong=-1&verbeconjugue=false&api_key=' +
-            this.apiKey
-        )
-        .then((response) => {
-          this.isValidWord(response.data[0].mot)
-          console.log(response.data[0].mot)
-          // let word = response.data[0].mot
-          // this.textType(word)
-        })
-    },
-    isValidWord(word) {
-      // debugger
-      axios
-        // .get('https://api.dictionaryapi.dev/api/v2/entries/fr/' + word)
-        // .get('https://fr.wiktionary.org/w/api.php?action=query&titles=' + word + '&format=json&origin=*')
-        .get(
-          'https://fr.wiktionary.org/w/api.php?action=query&list=search&srsearch=' +
-            word +
-            '&prop=info&inprop=url&utf8=&format=json&origin=*'
-        )
-
-        .then((response) => {
-          console.log(response)
-          if (response.data.query.searchinfo.totalhits === 0) {
-            // Le mot est inconnu
-            console.log("Ce mot n'existe pas... tête de fion.")
-            this.wordFail()
-          } else {
-            let wordObj = {
-              index: this.wordList.length,
-              text: word,
-              description: response.data.query.search[0].snippet,
-              visible: false,
-            }
-
-            // Le mot est reconnu on lance le script de typing
-            this.textType(wordObj.text)
-            this.wordList.push(this.removeAccents(wordObj.text))
-            this.wordListDisp.push(wordObj)
-            console.log(response.data)
-            // this.calcPoints += response.data.score
-            // console.log(this.calcPoints)
-          }
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-    },
-    comPlay() {
-      if (this.isTyping === false) {
-        setTimeout(() => this.getWord(), 4000)
-      }
-    },
-    addWord(word) {
-      console.log(word)
-      this.computerTurn = false
-      this.isValidWord(word)
-    },
-    randomDelay(max) {
-      return Math.floor(max * Math.random())
-    },
-    pointsCount() {
-      //On ajoute les points de l'écart entre les premières lettres de chaque mots.
-      if (this.wordList.length > 1) {
-        const lastIndex = this.wordList.length - 1
-        const prevIndex = lastIndex - 1
-        this.calcPoints += this.howManyLettersBetween(this.wordList[lastIndex], this.wordList[prevIndex])
-        console.log('bonus hmlb + ' + this.calcPoints)
-      }
-      // Est-ce un palindrome ?
-      this.calcPoints += this.isPalindrome(this.wordPlayed)
-
-      //Ajout du nombre de points Scrabble
-      // this.calcPoints += this.totalLetters(this.wordPlayed)
-
-      //Est-ce que le mot commence par une lettre qui suit la lettre du dernier mot
-      this.isAdjacentLetter(this.wordList[this.wordList.length - 1], this.wordList[this.wordList.length - 2])
-
-      //Est-ce que le mot est plus grand que le mot précédant
-      this.isGreaterOrTinierWord(this.wordList[this.wordList.length - 1], this.wordList[this.wordList.length - 2])
-    },
-
-    // Fonction du dispay de l"écriture
-    typeWriter(word) {
-      if (this.wordInput === '') {
-        this.wordInput = word
-      }
-
-      if (this.index === 0) {
-        this.refWord = this.wordInput
-        // this.refWord = this.removeAccents(this.refWord)
-      }
-      this.wordInput = ''
-
-      if (this.index < this.refWord.length) {
-        //Le mot se tape...
-        this.isTyping = true
-
-        // debugger
-        this.wordPlayed = this.wordPlayed + this.removeAccents(this.refWord.charAt(this.index))
-        this.addPoint(this.wordPlayed.charAt(this.index))
-        this.index++
-        this.playAtDuring(this.woosh)
-        setTimeout(() => this.typeWriter(), this.randomDelay(300))
-      } else if (this.index === this.refWord.length) {
-        // Le typing du mot est terminé
-        this.pointsCount()
-        // this.wordList.push(this.refWord)
-        this.refWord = ''
-        this.isTyping = false
-        this.index = 0
-
-        if (this.computerTurn === true) {
-          this.computerTurn = false
-          this.comPoints += this.calcPoints
-        } else {
-          this.playerPoints += this.calcPoints
-          this.computerTurn = true
-          this.comPlay()
-        }
-        console.log('terminé')
-        this.calcPoints = 0
-      }
-    },
-    textType(word) {
-      this.wordPlayed = ''
-      this.typeWriter(word)
-    },
-    removeAccents(str) {
-      var accents = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž'
-      var accentsOut = 'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz'
-
-      str = str.split('')
-      var strLen = str.length
-      var i, x
-      for (i = 0; i < strLen; i++) {
-        if ((x = accents.indexOf(str[i])) != -1) {
-          str[i] = accentsOut[x]
-        }
-      }
-      return str.join('')
-    },
-  },
-  computed: {
-    dynamicFontSize() {
-      if (this.wordPlayed.length > 12) {
-        let multiplier = (this.wordPlayed.length - 12) * 0.2
-        let defaultSize = 3
-
-        let finalSize = defaultSize - multiplier
-
-        return finalSize + 'em'
-      } else {
-        return '3em'
-      }
-    },
-  },
-  created() {
-    this.comPlay()
-  },
+const wordFail = () => {
+  wrongWord.value = true
+  setTimeout(() => {
+    wrongWord.value = false
+    wordPlayed.value = ''
+    calcPoints.value = 0
+    superSuiteBonus.value = 0
+    superShrinkBonus.value = 0
+    wordInput.value = ''
+    pointsAdded.value = []
+  }, 500)
 }
+
+const playAtDuring = (audio, at, during) => {
+  const audioPlay = new Audio(audio)
+
+  if (at !== undefined) {
+    audioPlay.currentTime = at
+  }
+  audioPlay.play()
+
+  if (during !== undefined) {
+    setTimeout(() => {
+      audioPlay.pause()
+    }, during)
+  }
+}
+
+const isGreaterOrTinierWord = (firstWord, secondWord) => {
+  if (wordList.value.length > 1) {
+    if (firstWord.length + 1 === secondWord.length || firstWord.length - 1 === secondWord.length) {
+      if (superShrinkBonus.value === 0) {
+        superShrinkBonus.value = 5
+      } else {
+        superShrinkBonus.value *= 2
+        calcPoints.value += superShrinkBonus.value
+      }
+    } else {
+      superShrinkBonus.value = 0
+    }
+  }
+}
+
+const addPoint = (currentLetter) => {
+  const letter = objectLetters[currentLetter]
+  if (!letter) {
+    return
+  }
+
+  pointsAdded.value.push(letter.points)
+  calcPoints.value += letter.points
+  setTimeout(() => {
+    pointsAdded.value.shift()
+  }, 3000)
+}
+
+const isAdjacentLetter = (firstWord, secondWord) => {
+  if (wordList.value.length > 1) {
+    const firstIndex = letters.indexOf(firstWord[0])
+    const secondIndex = letters.indexOf(secondWord[0])
+
+    if (firstIndex === -1 || secondIndex === -1) {
+      superSuiteBonus.value = 0
+      return false
+    }
+
+    if (firstIndex + 1 === secondIndex || firstIndex - 1 === secondIndex) {
+      if (superSuiteBonus.value === 0) {
+        superSuiteBonus.value = 5
+      } else {
+        superSuiteBonus.value *= 2
+        calcPoints.value += superSuiteBonus.value
+      }
+      return true
+    }
+
+    superSuiteBonus.value = 0
+  }
+  return false
+}
+
+const isPalindrome = (word) => {
+  if (word.split('').reverse().join('') === word) {
+    return 10
+  }
+  return 0
+}
+
+const totalLetters = (word) => {
+  let totalPoints = 0
+  for (let i = 0; i < word.length; i += 1) {
+    const letter = objectLetters[word[i]]
+    if (letter) {
+      totalPoints += letter.points
+    }
+  }
+  return totalPoints
+}
+
+const howManyLettersBetween = (firstWord, secondWord) => {
+  const firstIndex = letters.indexOf(firstWord[0])
+  const secondIndex = letters.indexOf(secondWord[0])
+  if (firstIndex === -1 || secondIndex === -1) {
+    return 0
+  }
+  return Math.abs(firstIndex - secondIndex)
+}
+
+const getWord = () => {
+  const randomWord = mockWords[Math.floor(Math.random() * mockWords.length)]
+  isValidWord(randomWord)
+}
+
+const isValidWord = (word) => {
+  const trimmed = word.trim()
+  if (trimmed.length === 0) {
+    return
+  }
+
+  const normalized = removeAccents(trimmed.toLowerCase())
+  const isValid = normalized.length >= 2 && /^[a-z]+$/.test(normalized)
+  if (!isValid) {
+    wordFail()
+    return
+  }
+
+  const wordObj = {
+    index: wordList.value.length,
+    text: trimmed,
+    description: 'Mot valide (mock).',
+    visible: false,
+  }
+
+  textType(trimmed)
+  wordList.value.push(normalized)
+  wordListDisp.value.push(wordObj)
+}
+
+const comPlay = () => {
+  if (isTyping.value === false) {
+    setTimeout(() => getWord(), 4000)
+  }
+}
+
+const addWord = (word) => {
+  if (!word || word.trim().length === 0) {
+    return
+  }
+  computerTurn.value = false
+  isValidWord(word)
+}
+
+const randomDelay = (max) => Math.floor(max * Math.random())
+
+const pointsCount = () => {
+  if (wordList.value.length > 1) {
+    const lastIndex = wordList.value.length - 1
+    const prevIndex = lastIndex - 1
+    calcPoints.value += howManyLettersBetween(wordList.value[lastIndex], wordList.value[prevIndex])
+    isAdjacentLetter(wordList.value[lastIndex], wordList.value[prevIndex])
+    isGreaterOrTinierWord(wordList.value[lastIndex], wordList.value[prevIndex])
+  }
+
+  calcPoints.value += isPalindrome(wordPlayed.value)
+}
+
+const typeWriter = (word) => {
+  if (wordInput.value === '' && word) {
+    wordInput.value = word
+  }
+
+  if (index.value === 0) {
+    refWord.value = wordInput.value
+  }
+  wordInput.value = ''
+
+  if (index.value < refWord.value.length) {
+    isTyping.value = true
+    const nextLetter = removeAccents(refWord.value.charAt(index.value))
+    wordPlayed.value += nextLetter
+    addPoint(nextLetter)
+    index.value += 1
+    playAtDuring(wooshUrl)
+    setTimeout(() => typeWriter(), randomDelay(300))
+  } else if (index.value === refWord.value.length && refWord.value !== '') {
+    pointsCount()
+    refWord.value = ''
+    isTyping.value = false
+    index.value = 0
+
+    if (computerTurn.value === true) {
+      computerTurn.value = false
+      comPoints.value += calcPoints.value
+    } else {
+      playerPoints.value += calcPoints.value
+      computerTurn.value = true
+      comPlay()
+    }
+    calcPoints.value = 0
+  }
+}
+
+const textType = (word) => {
+  wordPlayed.value = ''
+  typeWriter(word)
+}
+
+const removeAccents = (str) => {
+  const accents = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž'
+  const accentsOut = 'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz'
+
+  const chars = str.split('')
+  for (let i = 0; i < chars.length; i += 1) {
+    const accentIndex = accents.indexOf(chars[i])
+    if (accentIndex !== -1) {
+      chars[i] = accentsOut[accentIndex]
+    }
+  }
+  return chars.join('')
+}
+
+onMounted(() => {
+  comPlay()
+})
 </script>
-<style lang="stylus">
-@import url('assets/styles/cssanimation.css')
-@import url('//db.onlinewebfonts.com/c/0541dc5e4a0066762f6473dbe1c28092?family=JD + Scarabeo')
-
-@font-face
-  font-family roadRage
-  src url('./assets/fonts/Road_Rage.otf') format('opentype')
-
-@font-face
-  font-family 'JD Scarabeo' // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.eot"); src: url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.eot?#iefix") format("embedded-opentype"), url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff2") format("woff2"), url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff") format("woff"), url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf") format("truetype"), url("//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo") format("svg"); }
-  src url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg') // db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.ttf') format('truetype'), url('//db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.svg#JD Scarabeo') format('svg')
-
-html
-  text-shadow 0 0 2px #8C1EFF, 0 0 3px #8C1EFF99, 0 0 5px #8C1EFF99, 0 0 10px #8C1EFF99
-  color #8C1EFF99
-
-  div.v-list-item__title
-    font-size 1.7rem
-
-  div.txtInfos
-    font-family roadRage
-    font-size 7rem
-    color #ffd319
-    text-shadow 0 0 2px #ffc107, 0 0 3px #ffc107, 0 0 5px #ffc10799, 0 0 10px #ffc10773
-
-    &.zoomIn
-      animation zoomIn 500ms
-
-  div.v-list.v-sheet.theme--light
-    background-color #ff901f99
-    border 1px solid #ff901f
-    border-radius 4px
-
-  div.swStyle
-    background-color #ff297521
-    border 1px solid #ff2975
-    border-radius 4px
-    font-family roadRage
-
-  input.swStyle
-    width 100%
-    // height 80px
-    font-size 3rem
-    background-color #ff297521
-    border 1px solid #ff2975
-    border-radius 4px
-    font-family roadRage
-    text-indent 1em
-
-    &:focus
-      outline inherit
-
-  #app
-    background-image url('./assets/images/synthWall.jpg')
-    background-position top
-
-  .CaBFont
-    font-family 'JD Scarabeo'
-    font-size 60px
-
-    span
-      display inline-flex
-
-    &.blurOut
-      animation blurOut 0.5s
-
-    &.zoomOut
-      animation zoomOut 0.5ms
-
-  div.pointsAdding
-    min-height 24px
-
-    span
-      width 28px
-      display inline-flex
-
-  div.baseContent
-    height 80%
-
-div.v-list-item
-  min-height 13px
-
-div.itemList
-  position relative
-
-  div.wordDescription
-    position absolute
-    width 30em
-    padding 6px 5px
-    border-radius 10px
-    left 10em
-
-// animations
-span.zoomInBottom
-  animation zoomInBottom 0.25s
-
-input.quietMad
-  animation quietMad 1s infinite
-
-span.bounceFromTop
-  animation bounceFromTop 0.25s
-</style>
