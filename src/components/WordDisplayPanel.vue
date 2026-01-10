@@ -8,7 +8,7 @@
         +{{ point }}
       </span>
     </div>
-    <div class="text-center font-accent" :class="{ blurOut: wrongWord }" :style="{ fontSize: dynamicFontSize }">
+    <div class="text-center font-display" :class="{ blurOut: wrongWord }" :style="{ fontSize: dynamicFontSize }">
       <span v-for="(letter, i) in wordChars" :key="i" class="zoomInBottom inline-flex">
         {{ letter }}
       </span>

@@ -1,5 +1,7 @@
 # Word Fighter
 
+[![Deploy to GitHub Pages](https://github.com/Flatoupix/word-fighter/actions/workflows/deploy.yml/badge.svg)](https://github.com/Flatoupix/word-fighter/actions/workflows/deploy.yml)
+
 #### Le jeu consiste à entrer une série de mots en marquant le plus de points possible.
 
 ## Jeu actuel

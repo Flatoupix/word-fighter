@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 @import './styles/cssanimation.css';
 
 @tailwind base;
@@ -10,12 +11,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'JD Scarabeo';
-  src: url('https://db.onlinewebfonts.com/t/0541dc5e4a0066762f6473dbe1c28092.woff') format('woff');
-  font-display: swap;
-}
-
 body {
   margin: 0;
   min-height: 100vh;
@@ -24,7 +19,7 @@ body {
   background-size: cover;
   background-position: top;
   color: #ffd319;
-  font-family: 'JD Scarabeo', serif;
+  font-family: 'Bungee', 'Road Rage', cursive;
 }
 
 @layer components {

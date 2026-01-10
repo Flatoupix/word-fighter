@@ -6,7 +6,7 @@
         <p class="mt-2 text-sm text-neon-yellow/80">Tape un mot pour marquer des points.</p>
       </header>
 
-      <section class="grid gap-4 md:grid-cols-3">
+      <section class="grid gap-4 md:grid-cols-[1fr_3fr_1fr]">
         <WordListPanel :words="wordListDisp" @toggle="toggleWordVisibility" />
         <WordDisplayPanel
           :wrongWord="wrongWord"

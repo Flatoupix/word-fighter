@@ -14,7 +14,7 @@ module.exports = {
       },
       fontFamily: {
         display: ['"Road Rage"', 'cursive'],
-        accent: ['"JD Scarabeo"', 'serif'],
+        accent: ['"Bungee"', '"Road Rage"', 'cursive'],
       },
       boxShadow: {
         glow: '0 0 12px rgba(140, 30, 255, 0.6)',
