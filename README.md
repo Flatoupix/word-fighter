@@ -89,6 +89,20 @@
 
 ## Changelog
 
+@ 0.2.2
+
+- Ajout du workflow GitHub Pages et configuration d'environnement pour le déploiement
+- Ajout du badge de déploiement dans le README
+
+@ 0.2.1
+
+- Refactor UI en composants Vue + composables (état du jeu et dictionnaire)
+
+@ 0.2.0
+
+- Migration vers Vue 3 + Vite + Tailwind
+- Refonte du layout et des styles
+
 @ 0.0.2
 
 - Ajout d'un shake quand un mot n'est pas bon
