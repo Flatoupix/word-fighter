@@ -10,11 +10,11 @@
     </div>
     <div class="mt-6 grid gap-3 text-center md:grid-cols-2">
       <div class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
-        <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Player</div>
+        <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ playerLabel }}</div>
         <div class="font-numbers text-3xl text-neon-yellow">{{ playerScore }}</div>
       </div>
       <div class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
-        <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Computer</div>
+        <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ opponentLabel }}</div>
         <div class="font-numbers text-3xl text-neon-yellow">{{ computerScore }}</div>
       </div>
     </div>
@@ -44,6 +44,14 @@ defineProps({
   },
   computerScore: {
     type: Number,
+    required: true,
+  },
+  playerLabel: {
+    type: String,
+    required: true,
+  },
+  opponentLabel: {
+    type: String,
     required: true,
   },
 })

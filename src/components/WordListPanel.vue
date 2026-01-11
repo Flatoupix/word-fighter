@@ -7,7 +7,7 @@
           type="button"
           :class="[
             'w-full text-left font-accent text-lg',
-            word.owner === 'computer' ? 'text-neon-purple' : 'text-neon-yellow',
+            word.owner === 'computer' || word.owner === 'player2' ? 'text-neon-purple' : 'text-neon-yellow',
           ]"
           @click="$emit('toggle', index)"
         >

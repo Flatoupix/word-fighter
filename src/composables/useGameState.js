@@ -6,7 +6,7 @@ import { formatFrequency, normalizeWord, pickWeightedWord, resolveEntry } from '
 const letters = 'abcdefghijklmnopqrstuvwxyz'
 const objectLetters = scrabble.letters
 
-export const useGameState = () => {
+export const useGameState = (modeRef = ref('pvc')) => {
   const wordInput = ref('')
   const wordList = ref([])
   const wordListDisp = ref([])
@@ -40,8 +40,10 @@ export const useGameState = () => {
     return '3em'
   })
 
+  const isVsComputer = computed(() => modeRef.value !== 'pvp')
+
   const wordFail = () => {
-    const owner = computerTurn.value ? 'computer' : 'player'
+    const owner = isVsComputer.value ? (computerTurn.value ? 'computer' : 'player') : computerTurn.value ? 'player2' : 'player1'
     wordListDisp.value.push({
       index: wordListDisp.value.length,
       text: 'FAIL',
@@ -70,7 +72,9 @@ export const useGameState = () => {
           computerTurn.value = false
         } else {
           computerTurn.value = true
-          comPlay()
+          if (isVsComputer.value) {
+            comPlay()
+          }
         }
       }
     }, 500)
@@ -244,7 +248,9 @@ export const useGameState = () => {
       } else {
         playerPoints.value += calcPoints.value
         computerTurn.value = true
-        comPlay()
+        if (isVsComputer.value) {
+          comPlay()
+        }
       }
       calcPoints.value = 0
     }
@@ -265,8 +271,8 @@ export const useGameState = () => {
       return
     }
 
-    const owner = computerTurn.value ? 'computer' : 'player'
-    if (owner === 'computer') {
+    const owner = isVsComputer.value ? (computerTurn.value ? 'computer' : 'player') : computerTurn.value ? 'player2' : 'player1'
+    if (isVsComputer.value && owner === 'computer') {
       speedBonusAwarded.value = 0
     }
     const wordObj = {
@@ -297,6 +303,9 @@ export const useGameState = () => {
     if (!gameActive.value) {
       return
     }
+    if (!isVsComputer.value) {
+      return
+    }
     if (isTyping.value === false) {
       const delay = 1000 + Math.floor(Math.random() * 2000)
       setTimeout(() => getWord(), delay)
@@ -304,7 +313,7 @@ export const useGameState = () => {
   }
 
   const addWord = (word) => {
-    if (!gameActive.value || computerTurn.value || isTyping.value) {
+    if (!gameActive.value || isTyping.value || (isVsComputer.value && computerTurn.value)) {
       return
     }
     if (!word || word.trim().length === 0) {
@@ -312,7 +321,6 @@ export const useGameState = () => {
     }
     speedBonusAwarded.value = speedBonus.value
     stopSpeedTimer()
-    computerTurn.value = false
     isValidWord(word)
   }
 
@@ -346,9 +354,9 @@ export const useGameState = () => {
   }
 
   watch(
-    () => [computerTurn.value, gameActive.value, isTyping.value],
-    ([isComputerTurn, isActive, typing]) => {
-      if (isActive && !isComputerTurn && !typing) {
+    () => [computerTurn.value, gameActive.value, isTyping.value, isVsComputer.value],
+    ([isComputerTurn, isActive, typing, vsComputer]) => {
+      if (isActive && !typing && (!vsComputer || !isComputerTurn)) {
         if (!speedTimerId) {
           startSpeedTimer()
         }
@@ -360,6 +368,10 @@ export const useGameState = () => {
 
   const startGame = () => {
     gameActive.value = true
+    if (!isVsComputer.value) {
+      computerTurn.value = false
+      return
+    }
     if (computerTurn.value && !isTyping.value) {
       comPlay()
     }

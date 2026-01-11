@@ -1,7 +1,7 @@
 <template>
   <section class="grid gap-4 md:grid-cols-[1fr_2fr_1fr]">
     <div class="rounded-md border border-neon-pink/70 bg-black/40 p-3 text-center backdrop-blur-sm">
-      <h2 class="font-display text-xl text-neon-yellow">Player</h2>
+      <h2 class="font-display text-xl text-neon-yellow">{{ playerLabel }}</h2>
       <div class="font-numbers text-3xl text-neon-yellow">{{ playerPoints }}</div>
     </div>
     <div class="rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm">
@@ -37,7 +37,7 @@
       </div>
     </div>
     <div class="rounded-md border border-neon-pink/70 bg-black/40 p-3 text-center backdrop-blur-sm">
-      <h2 class="font-display text-xl text-neon-purple">Computer</h2>
+      <h2 class="font-display text-xl text-neon-purple">{{ opponentLabel }}</h2>
       <div class="font-numbers text-3xl text-neon-yellow">{{ comPoints }}</div>
     </div>
   </section>
@@ -71,6 +71,14 @@ defineProps({
   },
   speedBonus: {
     type: Number,
+    required: true,
+  },
+  playerLabel: {
+    type: String,
+    required: true,
+  },
+  opponentLabel: {
+    type: String,
     required: true,
   },
   formattedTime: {
