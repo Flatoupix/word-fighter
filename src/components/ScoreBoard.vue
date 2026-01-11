@@ -20,11 +20,16 @@
         @keydown.enter.prevent="$emit('submit')"
         placeholder="Tape ton mot..."
       />
+     
       <div class="mt-3 flex items-center justify-between">
         <div class="flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60">
           <span class="text-neon-yellow/50">Vitesse</span>
-          <span class="font-numbers text-sm text-neon-yellow">{{ speedElapsed }}s</span>
-        </div>
+          <span class="font-numbers text-sm text-neon-yellow w-[3.5rem]">{{ speedElapsed }}s</span>
+        </div> 
+      <div class="flex items-center justify-center gap-3 text-center">
+        <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Temps</div>
+        <div class="font-numbers text-xl text-neon-orange">{{ formattedTime }}</div>
+      </div>
         <div class="flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60">
           <span class="text-neon-yellow/50">Bonus</span>
           <span class="font-numbers text-sm text-neon-orange">+{{ speedBonus }}</span>
@@ -66,6 +71,10 @@ defineProps({
   },
   speedBonus: {
     type: Number,
+    required: true,
+  },
+  formattedTime: {
+    type: String,
     required: true,
   },
   disabled: {

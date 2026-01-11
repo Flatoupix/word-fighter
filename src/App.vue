@@ -6,7 +6,16 @@
         <p class="mt-2 text-sm text-neon-yellow/80">Tape un mot pour marquer des points.</p>
       </header>
 
-      <ModeSelector v-if="!selectedMode" @select="selectMode" />
+      <ResultScreen
+        v-if="showResults"
+        :winnerLabel="resultWinnerLabel"
+        :winnerScore="resultWinnerScore"
+        :playerScore="resultPlayerScore"
+        :computerScore="resultComputerScore"
+        @restart="resetMode"
+      />
+
+      <ModeSelector v-else-if="!selectedMode" @select="selectMode" />
 
       <TimeSelector v-else-if="!selectedDuration" @select="selectDuration" />
 
@@ -27,10 +36,6 @@
         </section>
 
         <template v-else>
-          <div class="flex items-center justify-center gap-3 text-center">
-            <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Temps</div>
-            <div class="font-numbers text-xl text-neon-orange">{{ formattedTime }}</div>
-          </div>
           <MainBoard :state="mainBoardState" @toggle="toggleWordVisibility" />
 
           <ScoreBoard
@@ -39,6 +44,7 @@
             :playerPoints="playerPoints"
             :comPoints="comPoints"
             :wrongWord="wrongWord"
+            :formattedTime="formattedTime"
             :speedElapsed="isStarted ? speedElapsedDisplay : '0.0'"
             :speedBonus="isStarted ? speedBonus : 0"
             :disabled="computerTurn || isTyping || !isStarted"
@@ -60,6 +66,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import MainBoard from './components/modes/MainBoard.vue'
 import ModeSelector from './components/modes/ModeSelector.vue'
+import ResultScreen from './components/modes/ResultScreen.vue'
 import TimeSelector from './components/modes/TimeSelector.vue'
 import ScoreBoard from './components/ScoreBoard.vue'
 import { useGameState } from './composables/useGameState'
@@ -84,6 +91,7 @@ const {
   isTyping,
   startGame,
   stopGame,
+  resetGame,
   addWord,
   toggleWordVisibility,
 } = useGameState()
@@ -92,6 +100,11 @@ const selectedMode = ref('')
 const selectedDuration = ref(0)
 const isStarted = ref(false)
 const timeLeft = ref(0)
+const showResults = ref(false)
+const resultPlayerScore = ref(0)
+const resultComputerScore = ref(0)
+const resultWinnerLabel = ref('')
+const resultWinnerScore = ref(0)
 let timerId = null
 const modeLabel = computed(() => {
   if (selectedMode.value === 'pvc') return 'Player VS Computer'
@@ -134,6 +147,11 @@ const resetMode = () => {
   selectedDuration.value = 0
   timeLeft.value = 0
   isStarted.value = false
+  showResults.value = false
+  resultPlayerScore.value = 0
+  resultComputerScore.value = 0
+  resultWinnerLabel.value = ''
+  resultWinnerScore.value = 0
   stopTimer()
 }
 
@@ -145,6 +163,29 @@ const stopTimer = () => {
   stopGame()
 }
 
+const finishGame = () => {
+  if (timerId) {
+    clearInterval(timerId)
+    timerId = null
+  }
+  resultPlayerScore.value = playerPoints.value
+  resultComputerScore.value = comPoints.value
+  if (playerPoints.value > comPoints.value) {
+    resultWinnerLabel.value = 'Player'
+    resultWinnerScore.value = playerPoints.value
+  } else if (comPoints.value > playerPoints.value) {
+    resultWinnerLabel.value = 'Computer'
+    resultWinnerScore.value = comPoints.value
+  } else {
+    resultWinnerLabel.value = 'Égalité'
+    resultWinnerScore.value = playerPoints.value
+  }
+  isStarted.value = false
+  timeLeft.value = 0
+  showResults.value = true
+  resetGame()
+}
+
 const startTimer = () => {
   if (!selectedDuration.value) {
     return
@@ -152,15 +193,14 @@ const startTimer = () => {
   stopTimer()
   timeLeft.value = selectedDuration.value * 60
   isStarted.value = true
+  showResults.value = false
   startGame()
   timerId = setInterval(() => {
     if (timeLeft.value > 0) {
       timeLeft.value -= 1
       return
     }
-    timeLeft.value = 0
-    isStarted.value = false
-    stopTimer()
+    finishGame()
   }, 1000)
 }
 

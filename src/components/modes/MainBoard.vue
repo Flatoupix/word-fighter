@@ -1,5 +1,5 @@
 <template>
-  <section class="grid h-[clamp(22rem,52vh,32rem)] gap-4 md:grid-cols-[1fr_3fr_1fr]">
+  <section class="grid h-[25rem] gap-4 md:grid-cols-[1fr_3fr_1fr]">
     <WordListPanel :words="state.words" @toggle="$emit('toggle', $event)" />
     <WordDisplayPanel
       :wrongWord="state.wrongWord"

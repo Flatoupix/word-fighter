@@ -41,6 +41,14 @@ export const useGameState = () => {
   })
 
   const wordFail = () => {
+    const owner = computerTurn.value ? 'computer' : 'player'
+    wordListDisp.value.push({
+      index: wordListDisp.value.length,
+      text: 'FAIL',
+      description: 'Mot invalide',
+      visible: false,
+      owner,
+    })
     wrongWord.value = true
     if (speedTimerId) {
       clearInterval(speedTimerId)
@@ -290,7 +298,8 @@ export const useGameState = () => {
       return
     }
     if (isTyping.value === false) {
-      setTimeout(() => getWord(), 4000)
+      const delay = 1000 + Math.floor(Math.random() * 2000)
+      setTimeout(() => getWord(), delay)
     }
   }
 
@@ -366,6 +375,22 @@ export const useGameState = () => {
     speedBonusAwarded.value = 0
   }
 
+  const resetGame = () => {
+    stopGame()
+    wordInput.value = ''
+    wordList.value = []
+    wordListDisp.value = []
+    wordPlayed.value = ''
+    wrongWord.value = false
+    playerPoints.value = 0
+    comPoints.value = 0
+    calcPoints.value = 0
+    superSuiteBonus.value = 0
+    superShrinkBonus.value = 0
+    pointsAdded.value = []
+    computerTurn.value = true
+  }
+
   onBeforeUnmount(() => {
     stopSpeedTimer()
   })
@@ -390,6 +415,7 @@ export const useGameState = () => {
     isTyping,
     startGame,
     stopGame,
+    resetGame,
     addWord,
     toggleWordVisibility,
   }
