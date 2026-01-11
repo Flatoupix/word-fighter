@@ -2,6 +2,13 @@
   <section
     class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-4 backdrop-blur-sm md:max-w-[40vw]"
   >
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
+      @click="$emit('back')"
+    >
+      ← Back
+    </button>
     <h2 class="text-center font-display text-3xl text-neon-yellow">Résultat</h2>
     <div class="mt-4 text-center">
       <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Gagnant</div>
@@ -56,5 +63,5 @@ defineProps({
   },
 })
 
-defineEmits(['restart'])
+defineEmits(['restart', 'back'])
 </script>

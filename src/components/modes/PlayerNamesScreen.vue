@@ -1,5 +1,12 @@
 <template>
   <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-4 backdrop-blur-sm md:max-w-[33vw]">
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
+      @click="$emit('back')"
+    >
+      ← Back
+    </button>
     <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Nom du joueur</h2>
     <div class="mt-4">
       <label class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">
@@ -37,7 +44,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['confirm'])
+const emit = defineEmits(['confirm', 'back'])
 
 const localPlayerOne = ref(props.playerOneName)
 const localPlayerTwo = ref(props.playerTwoName)

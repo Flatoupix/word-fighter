@@ -15,6 +15,7 @@
         :playerLabel="playerOneLabel"
         :opponentLabel="playerTwoLabel"
         @restart="resetMode"
+        @back="goBack"
       />
 
       <ModeSelector v-else-if="!selectedMode" @select="selectMode" />
@@ -24,15 +25,23 @@
         :playerOneName="playerOneName"
         :playerTwoName="playerTwoName"
         @confirm="confirmNames"
+        @back="goBack"
       />
 
-      <TimeSelector v-else-if="!selectedDuration" @select="selectDuration" />
+      <TimeSelector v-else-if="!selectedDuration" @select="selectDuration" @back="goBack" />
 
       <template v-else>
         <section
           v-if="!isStarted"
           class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm md:max-w-[33vw]"
         >
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
+            @click="goBack"
+          >
+            ← Back
+          </button>
           <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Prêt ?</h2>
           <div class="mt-3 text-center font-numbers text-4xl text-neon-yellow">{{ formattedTime }}</div>
           <button
@@ -184,6 +193,32 @@ const confirmNames = ({ playerOne, playerTwo }) => {
   playerOneName.value = playerOne
   playerTwoName.value = playerTwo
   namesConfirmed.value = true
+}
+
+const goBack = () => {
+  if (showResults.value) {
+    resetMode()
+    return
+  }
+  if (isStarted.value) {
+    return
+  }
+  if (selectedDuration.value) {
+    selectedDuration.value = 0
+    timeLeft.value = 0
+    stopTimer()
+    return
+  }
+  if (selectedMode.value === 'pvp' && namesConfirmed.value) {
+    namesConfirmed.value = false
+    return
+  }
+  if (selectedMode.value) {
+    selectedMode.value = ''
+    namesConfirmed.value = false
+    playerOneName.value = 'Player 1'
+    playerTwoName.value = 'Player 2'
+  }
 }
 
 const stopTimer = () => {
