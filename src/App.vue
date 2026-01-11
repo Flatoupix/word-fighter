@@ -6,40 +6,50 @@
         <p class="mt-2 text-sm text-neon-yellow/80">Tape un mot pour marquer des points.</p>
       </header>
 
-      <section class="main-board grid gap-4 md:grid-cols-[1fr_3fr_1fr]">
-        <WordListPanel :words="wordListDisp" @toggle="toggleWordVisibility" />
-        <WordDisplayPanel
+      <ModeSelector v-if="!selectedMode" @select="selectMode" />
+
+      <TimeSelector v-else-if="!selectedDuration" @select="selectDuration" />
+
+      <template v-else>
+        <MainBoard
+          :words="wordListDisp"
           :wrongWord="wrongWord"
           :pointsAdded="pointsAdded"
           :wordChars="wordChars"
           :dynamicFontSize="dynamicFontSize"
-        />
-        <BonusPanel
           :superSuiteBonus="superSuiteBonus"
           :superShrinkBonus="superShrinkBonus"
           :palindromeActive="palindromeActive"
           :scoreValue="scoreValue"
           :scoreFontSize="scoreFontSize"
+          @toggle="toggleWordVisibility"
         />
-      </section>
 
-      <ScoreBoard
-        v-model:wordInput="wordInput"
-        :playerPoints="playerPoints"
-        :comPoints="comPoints"
-        :wrongWord="wrongWord"
-        :disabled="computerTurn || isTyping"
-        @submit="onSubmit"
-      />
+        <ScoreBoard
+          v-model:wordInput="wordInput"
+          :playerPoints="playerPoints"
+          :comPoints="comPoints"
+          :wrongWord="wrongWord"
+          :disabled="computerTurn || isTyping"
+          @submit="onSubmit"
+        />
+        <div class="text-center text-xs text-neon-yellow/60">
+          Mode: {{ modeLabel }} · Temps: {{ durationLabel }}
+          <button type="button" class="ml-2 text-neon-purple/80 hover:text-neon-purple" @click="resetMode">
+            changer
+          </button>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import BonusPanel from './components/BonusPanel.vue'
+import { computed, ref } from 'vue'
+import MainBoard from './components/modes/MainBoard.vue'
+import ModeSelector from './components/modes/ModeSelector.vue'
+import TimeSelector from './components/modes/TimeSelector.vue'
 import ScoreBoard from './components/ScoreBoard.vue'
-import WordDisplayPanel from './components/WordDisplayPanel.vue'
-import WordListPanel from './components/WordListPanel.vue'
 import { useGameState } from './composables/useGameState'
 
 const {
@@ -61,6 +71,29 @@ const {
   addWord,
   toggleWordVisibility,
 } = useGameState()
+
+const selectedMode = ref('')
+const selectedDuration = ref(0)
+const modeLabel = computed(() => {
+  if (selectedMode.value === 'pvc') return 'Player VS Computer'
+  if (selectedMode.value === 'pvp') return 'Player VS Player'
+  if (selectedMode.value === 'online') return 'Online Battle'
+  return ''
+})
+const durationLabel = computed(() => (selectedDuration.value ? `${selectedDuration.value} min` : ''))
+
+const selectMode = (mode) => {
+  selectedMode.value = mode
+}
+
+const selectDuration = (minutes) => {
+  selectedDuration.value = minutes
+}
+
+const resetMode = () => {
+  selectedMode.value = ''
+  selectedDuration.value = 0
+}
 
 const onSubmit = () => {
   addWord(wordInput.value)

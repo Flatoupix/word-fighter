@@ -33,6 +33,28 @@ body {
     @apply rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm;
   }
 
+  .mode-panel {
+    @apply py-6;
+    width: min(100%, 33vw);
+    margin: 0 auto;
+  }
+
+  .mode-grid {
+    @apply mt-4 grid gap-4;
+  }
+
+  .mode-card {
+    @apply rounded-md border border-neon-pink/70 bg-black/30 px-4 py-5 text-center transition hover:border-neon-purple/80 hover:bg-black/40;
+  }
+
+  .mode-title {
+    @apply font-display text-2xl text-neon-yellow;
+  }
+
+  .mode-desc {
+    @apply mt-2 text-sm text-neon-yellow/70 font-ui;
+  }
+
   .word-list-panel {
     @apply flex flex-col;
   }
