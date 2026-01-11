@@ -1,7 +1,7 @@
 <template>
-  <section class="panel mode-panel">
-    <h2 class="panel-title">Choisis ton mode</h2>
-    <div class="mode-grid">
+  <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm md:max-w-[30rem]">
+    <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Choisis ton mode</h2>
+    <div class="mt-4 grid gap-4">
       <ModeCard
         mode="pvc"
         title="Player VS Computer"

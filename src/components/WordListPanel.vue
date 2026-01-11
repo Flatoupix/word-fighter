@@ -1,12 +1,12 @@
 <template>
-  <aside class="panel word-list-panel">
-    <h2 class="panel-title">Mots</h2>
-    <ul class="word-list mt-3 space-y-2">
+  <aside class="flex flex-col rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm">
+    <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Mots</h2>
+    <ul class="mt-3 flex-1 space-y-2 overflow-y-auto pr-1">
       <li v-for="(word, index) in words" :key="index">
         <button
           type="button"
           :class="[
-            'word-item font-accent',
+            'w-full text-left font-accent text-lg',
             word.owner === 'computer' ? 'text-neon-purple' : 'text-neon-yellow',
           ]"
           @click="$emit('toggle', index)"

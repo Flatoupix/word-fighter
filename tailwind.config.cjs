@@ -13,8 +13,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ['"Orbitron"', '"Road Rage"', 'cursive'],
-        accent: ['"Orbitron"', '"Bungee"', '"Road Rage"', 'cursive'],
+        display: ['Road Rage', 'cursive'],
+        accent: ['Road Rage', 'cursive'],
         numbers: ['"Orbitron"', 'monospace'],
         ui: ['"Sora"', 'system-ui', 'sans-serif'],
       },

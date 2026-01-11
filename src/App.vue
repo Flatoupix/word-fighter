@@ -11,20 +11,30 @@
       <TimeSelector v-else-if="!selectedDuration" @select="selectDuration" />
 
       <template v-else>
-        <section v-if="!isStarted" class="panel mode-panel">
-          <h2 class="panel-title">Prêt ?</h2>
-          <div class="game-timer">{{ formattedTime }}</div>
-          <button type="button" class="mode-card mt-4" @click="startTimer">Start</button>
+        <section
+          v-if="!isStarted"
+          class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm md:max-w-[33vw]"
+        >
+          <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Prêt ?</h2>
+          <div class="mt-3 text-center font-numbers text-4xl text-neon-yellow">{{ formattedTime }}</div>
+          <button
+            type="button"
+            class="mt-4 w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-5 text-center transition hover:border-neon-purple/80 hover:bg-black/40"
+            @click="startTimer"
+          >
+            <span class="font-display text-2xl text-neon-yellow">Start</span>
+          </button>
         </section>
 
         <template v-else>
-          <div class="game-meta">
-            <div class="game-meta__label">Temps</div>
-            <div class="game-meta__time">{{ formattedTime }}</div>
+          <div class="flex items-center justify-center gap-3 text-center">
+            <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Temps</div>
+            <div class="font-numbers text-xl text-neon-orange">{{ formattedTime }}</div>
           </div>
-        <MainBoard :state="mainBoardState" @toggle="toggleWordVisibility" />
+          <MainBoard :state="mainBoardState" @toggle="toggleWordVisibility" />
 
           <ScoreBoard
+            ref="scoreBoardRef"
             v-model:wordInput="wordInput"
             :playerPoints="playerPoints"
             :comPoints="comPoints"
@@ -47,7 +57,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import MainBoard from './components/modes/MainBoard.vue'
 import ModeSelector from './components/modes/ModeSelector.vue'
 import TimeSelector from './components/modes/TimeSelector.vue'
@@ -108,6 +118,7 @@ const mainBoardState = computed(() => ({
   scoreValue: scoreValue.value,
   scoreFontSize: scoreFontSize.value,
 }))
+const scoreBoardRef = ref(null)
 
 const selectMode = (mode) => {
   selectedMode.value = mode
@@ -156,6 +167,17 @@ const startTimer = () => {
 const onSubmit = () => {
   addWord(wordInput.value)
 }
+
+watch(
+  () => [computerTurn.value, isTyping.value, isStarted.value],
+  async ([isComputer, typing, started]) => {
+    if (!started || isComputer || typing) {
+      return
+    }
+    await nextTick()
+    scoreBoardRef.value?.focusInput?.()
+  }
+)
 
 onBeforeUnmount(() => {
   stopTimer()

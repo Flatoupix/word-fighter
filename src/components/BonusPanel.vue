@@ -1,6 +1,6 @@
 <template>
-  <aside class="panel">
-    <h2 class="panel-title">Bonus</h2>
+  <aside class="rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm">
+    <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Bonus</h2>
     <div class="mt-3 space-y-3 text-center">
       <div>
         <div
@@ -11,7 +11,7 @@
         >
           Super Suite
         </div>
-        <div class="bonus-caption">Initiales adjacentes</div>
+        <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Initiales adjacentes</div>
         <div v-if="superSuiteBonus > 0" class="font-display text-neon-orange">+{{ superSuiteBonus }}</div>
       </div>
       <div>
@@ -23,7 +23,7 @@
         >
           Super Shrink
         </div>
-        <div class="bonus-caption">±1 lettre</div>
+        <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">±1 lettre</div>
         <div v-if="superShrinkBonus > 0" class="font-display text-neon-orange">+{{ superShrinkBonus }}</div>
       </div>
       <div>
@@ -35,7 +35,7 @@
         >
           Palindrome
         </div>
-        <div class="bonus-caption">Mot identique inversé</div>
+        <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Mot identique inversé</div>
         <div v-if="palindromeActive" class="font-display text-neon-orange">+10</div>
       </div>
       <div>
@@ -47,8 +47,11 @@
         >
           Score
         </div>
-        <div class="score-live-frame">
-          <div class="score-live font-display text-neon-orange" :style="{ fontSize: scoreFontSize }">
+        <div class="flex h-[2.8rem] items-center justify-center">
+          <div
+            class="font-numbers text-neon-orange transition-[font-size] duration-[220ms] ease-out"
+            :style="{ fontSize: scoreFontSize }"
+          >
             {{ scoreValue }}
           </div>
         </div>
