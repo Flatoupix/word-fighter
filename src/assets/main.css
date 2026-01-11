@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&text=0123456789&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600&display=swap');
 @import './styles/cssanimation.css';
 
 @tailwind base;
@@ -24,16 +25,44 @@ body {
 }
 
 @layer components {
+  .main-board {
+    height: clamp(22rem, 60vh, 32rem);
+  }
+
   .panel {
     @apply rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm;
+  }
+
+  .word-list-panel {
+    @apply flex flex-col;
+  }
+
+  .word-list {
+    @apply flex-1 overflow-y-auto pr-1;
   }
 
   .panel-title {
     @apply text-center font-display text-2xl tracking-wide text-neon-yellow;
   }
 
+  .bonus-caption {
+    @apply text-[10px] uppercase tracking-wide text-neon-yellow/50 font-ui;
+  }
+
   .score {
     @apply font-numbers text-3xl text-neon-yellow;
+  }
+
+  .score-live {
+    @apply font-numbers;
+    transition: font-size 220ms ease-out;
+  }
+
+  .score-live-frame {
+    height: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .input-field {
@@ -41,7 +70,11 @@ body {
   }
 
   .word-item {
-    @apply w-full text-left font-accent text-lg text-neon-yellow/90;
+    @apply w-full text-left font-accent text-lg;
+  }
+
+  .points-added {
+    @apply font-numbers text-xl text-neon-orange;
   }
 }
 

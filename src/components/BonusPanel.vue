@@ -11,6 +11,7 @@
         >
           Super Suite
         </div>
+        <div class="bonus-caption">Initiales adjacentes</div>
         <div v-if="superSuiteBonus > 0" class="font-display text-neon-orange">+{{ superSuiteBonus }}</div>
       </div>
       <div>
@@ -22,6 +23,7 @@
         >
           Super Shrink
         </div>
+        <div class="bonus-caption">±1 lettre</div>
         <div v-if="superShrinkBonus > 0" class="font-display text-neon-orange">+{{ superShrinkBonus }}</div>
       </div>
       <div>
@@ -33,6 +35,7 @@
         >
           Palindrome
         </div>
+        <div class="bonus-caption">Mot identique inversé</div>
         <div v-if="palindromeActive" class="font-display text-neon-orange">+10</div>
       </div>
       <div>
@@ -44,7 +47,11 @@
         >
           Score
         </div>
-        <div class="font-display text-neon-orange">{{ scoreValue }}</div>
+        <div class="score-live-frame">
+          <div class="score-live font-display text-neon-orange" :style="{ fontSize: scoreFontSize }">
+            {{ scoreValue }}
+          </div>
+        </div>
       </div>
     </div>
   </aside>
@@ -66,6 +73,10 @@ defineProps({
   },
   scoreValue: {
     type: Number,
+    required: true,
+  },
+  scoreFontSize: {
+    type: String,
     required: true,
   },
 })

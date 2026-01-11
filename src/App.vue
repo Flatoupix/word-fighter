@@ -6,7 +6,7 @@
         <p class="mt-2 text-sm text-neon-yellow/80">Tape un mot pour marquer des points.</p>
       </header>
 
-      <section class="grid gap-4 md:grid-cols-[1fr_3fr_1fr]">
+      <section class="main-board grid gap-4 md:grid-cols-[1fr_3fr_1fr]">
         <WordListPanel :words="wordListDisp" @toggle="toggleWordVisibility" />
         <WordDisplayPanel
           :wrongWord="wrongWord"
@@ -19,6 +19,7 @@
           :superShrinkBonus="superShrinkBonus"
           :palindromeActive="palindromeActive"
           :scoreValue="scoreValue"
+          :scoreFontSize="scoreFontSize"
         />
       </section>
 
@@ -27,6 +28,7 @@
         :playerPoints="playerPoints"
         :comPoints="comPoints"
         :wrongWord="wrongWord"
+        :disabled="computerTurn || isTyping"
         @submit="onSubmit"
       />
     </div>
@@ -51,8 +53,11 @@ const {
   superShrinkBonus,
   palindromeActive,
   scoreValue,
+  scoreFontSize,
   playerPoints,
   comPoints,
+  computerTurn,
+  isTyping,
   addWord,
   toggleWordVisibility,
 } = useGameState()

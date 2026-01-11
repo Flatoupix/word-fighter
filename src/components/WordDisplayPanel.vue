@@ -4,7 +4,7 @@
       FAIIIL
     </div>
     <div class="min-h-[1.5rem] text-center text-neon-yellow/80">
-      <span v-for="(point, index) in pointsAdded" :key="index" class="bounceFromTop inline-flex px-1">
+      <span v-for="(point, index) in pointsAdded" :key="index" class="points-added bounceFromTop inline-flex px-1">
         +{{ point }}
       </span>
     </div>

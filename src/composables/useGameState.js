@@ -118,7 +118,8 @@ export const useGameState = () => {
   }
 
   const isPalindrome = (word) => {
-    if (word.split('').reverse().join('') === word) {
+    const normalized = normalizeWord(word)
+    if (normalized.split('').reverse().join('') === normalized) {
       return 10
     }
     return 0
@@ -127,7 +128,8 @@ export const useGameState = () => {
   const totalLetters = (word) => {
     let totalPoints = 0
     for (let i = 0; i < word.length; i += 1) {
-      const letter = objectLetters[word[i]]
+      const normalizedLetter = normalizeWord(word[i])
+      const letter = objectLetters[normalizedLetter]
       if (letter) {
         totalPoints += letter.points
       }
@@ -136,6 +138,14 @@ export const useGameState = () => {
   }
 
   const scoreValue = computed(() => totalLetters(wordPlayed.value))
+  const scoreFontSize = computed(() => {
+    const baseSize = 1.25
+    const maxSize = 2.4
+    const capped = Math.min(scoreValue.value, 30)
+    const ratio = capped / 30
+    const size = baseSize + ratio * (maxSize - baseSize)
+    return `${size}rem`
+  })
   const palindromeActive = computed(
     () => isPalindrome(wordPlayed.value) > 5 && wordPlayed.value !== '' && !isTyping.value
   )
@@ -171,9 +181,10 @@ export const useGameState = () => {
 
     if (index.value < refWord.value.length) {
       isTyping.value = true
-      const nextLetter = normalizeWord(refWord.value.charAt(index.value))
-      wordPlayed.value += nextLetter
-      addPoint(nextLetter)
+      const nextLetterRaw = refWord.value.charAt(index.value)
+      const nextLetterNormalized = normalizeWord(nextLetterRaw)
+      wordPlayed.value += nextLetterRaw
+      addPoint(nextLetterNormalized)
       index.value += 1
       playAtDuring(wooshUrl)
       setTimeout(() => typeWriter(), randomDelay(300))
@@ -207,11 +218,13 @@ export const useGameState = () => {
       return
     }
 
+    const owner = computerTurn.value ? 'computer' : 'player'
     const wordObj = {
       index: wordList.value.length,
       text: entry.raw,
       description: formatFrequency(entry.freqLemma, entry.freqForm),
       visible: false,
+      owner,
     }
 
     textType(entry.raw)
@@ -234,6 +247,9 @@ export const useGameState = () => {
   }
 
   const addWord = (word) => {
+    if (computerTurn.value || isTyping.value) {
+      return
+    }
     if (!word || word.trim().length === 0) {
       return
     }
@@ -263,8 +279,11 @@ export const useGameState = () => {
     superShrinkBonus,
     palindromeActive,
     scoreValue,
+    scoreFontSize,
     playerPoints,
     comPoints,
+    computerTurn,
+    isTyping,
     addWord,
     toggleWordVisibility,
   }
