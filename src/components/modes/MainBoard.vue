@@ -1,18 +1,18 @@
 <template>
   <section class="main-board grid gap-4 md:grid-cols-[1fr_3fr_1fr]">
-    <WordListPanel :words="words" @toggle="$emit('toggle', $event)" />
+    <WordListPanel :words="state.words" @toggle="$emit('toggle', $event)" />
     <WordDisplayPanel
-      :wrongWord="wrongWord"
-      :pointsAdded="pointsAdded"
-      :wordChars="wordChars"
-      :dynamicFontSize="dynamicFontSize"
+      :wrongWord="state.wrongWord"
+      :pointsAdded="state.pointsAdded"
+      :wordChars="state.wordChars"
+      :dynamicFontSize="state.dynamicFontSize"
     />
     <BonusPanel
-      :superSuiteBonus="superSuiteBonus"
-      :superShrinkBonus="superShrinkBonus"
-      :palindromeActive="palindromeActive"
-      :scoreValue="scoreValue"
-      :scoreFontSize="scoreFontSize"
+      :superSuiteBonus="state.superSuiteBonus"
+      :superShrinkBonus="state.superShrinkBonus"
+      :palindromeActive="state.palindromeActive"
+      :scoreValue="state.scoreValue"
+      :scoreFontSize="state.scoreFontSize"
     />
   </section>
 </template>
@@ -23,44 +23,8 @@ import WordDisplayPanel from '../WordDisplayPanel.vue'
 import WordListPanel from '../WordListPanel.vue'
 
 defineProps({
-  words: {
-    type: Array,
-    required: true,
-  },
-  wrongWord: {
-    type: Boolean,
-    required: true,
-  },
-  pointsAdded: {
-    type: Array,
-    required: true,
-  },
-  wordChars: {
-    type: Array,
-    required: true,
-  },
-  dynamicFontSize: {
-    type: String,
-    required: true,
-  },
-  superSuiteBonus: {
-    type: Number,
-    required: true,
-  },
-  superShrinkBonus: {
-    type: Number,
-    required: true,
-  },
-  palindromeActive: {
-    type: Boolean,
-    required: true,
-  },
-  scoreValue: {
-    type: Number,
-    required: true,
-  },
-  scoreFontSize: {
-    type: String,
+  state: {
+    type: Object,
     required: true,
   },
 })

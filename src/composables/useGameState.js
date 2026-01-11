@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import scrabble from '../assets/words/scrabble.json'
 import wooshUrl from '../assets/audio/woosh.mp3'
 import { formatFrequency, normalizeWord, pickWeightedWord, resolveEntry } from './useDictionary'
@@ -16,6 +16,10 @@ export const useGameState = () => {
   const computerTurn = ref(true)
   const index = ref(0)
   const wrongWord = ref(false)
+  const gameActive = ref(false)
+  const speedElapsed = ref(0)
+  const speedBonusAwarded = ref(0)
+  let speedTimerId = null
 
   const playerPoints = ref(0)
   const comPoints = ref(0)
@@ -38,6 +42,12 @@ export const useGameState = () => {
 
   const wordFail = () => {
     wrongWord.value = true
+    if (speedTimerId) {
+      clearInterval(speedTimerId)
+      speedTimerId = null
+    }
+    speedElapsed.value = 0
+    speedBonusAwarded.value = 0
     setTimeout(() => {
       wrongWord.value = false
       wordPlayed.value = ''
@@ -46,6 +56,15 @@ export const useGameState = () => {
       superShrinkBonus.value = 0
       wordInput.value = ''
       pointsAdded.value = []
+      isTyping.value = false
+      if (gameActive.value) {
+        if (computerTurn.value) {
+          computerTurn.value = false
+        } else {
+          computerTurn.value = true
+          comPlay()
+        }
+      }
     }, 500)
   }
 
@@ -138,6 +157,13 @@ export const useGameState = () => {
   }
 
   const scoreValue = computed(() => totalLetters(wordPlayed.value))
+  const speedBonus = computed(() => {
+    const maxTime = 5
+    const maxBonus = 10
+    const capped = Math.min(speedElapsed.value, maxTime)
+    const ratio = 1 - capped / maxTime
+    return Math.max(0, Math.round(maxBonus * ratio))
+  })
   const scoreFontSize = computed(() => {
     const baseSize = 1.25
     const maxSize = 2.4
@@ -169,11 +195,21 @@ export const useGameState = () => {
     }
 
     calcPoints.value += isPalindrome(wordPlayed.value)
+    if (speedBonusAwarded.value > 0) {
+      calcPoints.value += speedBonusAwarded.value
+      speedBonusAwarded.value = 0
+    }
   }
 
   const randomDelay = (max) => Math.floor(max * Math.random())
 
   const typeWriter = (word) => {
+    if (!gameActive.value) {
+      isTyping.value = false
+      refWord.value = ''
+      index.value = 0
+      return
+    }
     if (index.value === 0) {
       refWord.value = word || wordInput.value
     }
@@ -212,6 +248,9 @@ export const useGameState = () => {
   }
 
   const isValidWord = (word) => {
+    if (!gameActive.value) {
+      return
+    }
     const entry = resolveEntry(word)
     if (!entry) {
       wordFail()
@@ -219,6 +258,9 @@ export const useGameState = () => {
     }
 
     const owner = computerTurn.value ? 'computer' : 'player'
+    if (owner === 'computer') {
+      speedBonusAwarded.value = 0
+    }
     const wordObj = {
       index: wordList.value.length,
       text: entry.raw,
@@ -233,6 +275,9 @@ export const useGameState = () => {
   }
 
   const getWord = () => {
+    if (!gameActive.value) {
+      return
+    }
     const randomWord = pickWeightedWord()
     if (!randomWord) {
       return
@@ -241,18 +286,23 @@ export const useGameState = () => {
   }
 
   const comPlay = () => {
+    if (!gameActive.value) {
+      return
+    }
     if (isTyping.value === false) {
       setTimeout(() => getWord(), 4000)
     }
   }
 
   const addWord = (word) => {
-    if (computerTurn.value || isTyping.value) {
+    if (!gameActive.value || computerTurn.value || isTyping.value) {
       return
     }
     if (!word || word.trim().length === 0) {
       return
     }
+    speedBonusAwarded.value = speedBonus.value
+    stopSpeedTimer()
     computerTurn.value = false
     isValidWord(word)
   }
@@ -268,6 +318,58 @@ export const useGameState = () => {
     comPlay()
   })
 
+  const startSpeedTimer = () => {
+    if (speedTimerId) {
+      clearInterval(speedTimerId)
+    }
+    const startAt = Date.now()
+    speedElapsed.value = 0
+    speedTimerId = setInterval(() => {
+      speedElapsed.value = (Date.now() - startAt) / 1000
+    }, 100)
+  }
+
+  const stopSpeedTimer = () => {
+    if (speedTimerId) {
+      clearInterval(speedTimerId)
+      speedTimerId = null
+    }
+  }
+
+  watch(
+    () => [computerTurn.value, gameActive.value, isTyping.value],
+    ([isComputerTurn, isActive, typing]) => {
+      if (isActive && !isComputerTurn && !typing) {
+        if (!speedTimerId) {
+          startSpeedTimer()
+        }
+        return
+      }
+      stopSpeedTimer()
+    }
+  )
+
+  const startGame = () => {
+    gameActive.value = true
+    if (computerTurn.value && !isTyping.value) {
+      comPlay()
+    }
+  }
+
+  const stopGame = () => {
+    gameActive.value = false
+    isTyping.value = false
+    refWord.value = ''
+    index.value = 0
+    stopSpeedTimer()
+    speedElapsed.value = 0
+    speedBonusAwarded.value = 0
+  }
+
+  onBeforeUnmount(() => {
+    stopSpeedTimer()
+  })
+
   return {
     wordInput,
     wordListDisp,
@@ -279,11 +381,15 @@ export const useGameState = () => {
     superShrinkBonus,
     palindromeActive,
     scoreValue,
+    speedElapsed,
+    speedBonus,
     scoreFontSize,
     playerPoints,
     comPoints,
     computerTurn,
     isTyping,
+    startGame,
+    stopGame,
     addWord,
     toggleWordVisibility,
   }

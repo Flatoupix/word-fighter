@@ -19,6 +19,16 @@
         @keydown.enter.prevent="$emit('submit')"
         placeholder="Tape ton mot..."
       />
+      <div class="speed-row">
+        <div class="speed-item">
+          <span class="speed-label">Vitesse</span>
+          <span class="speed-value">{{ speedElapsed }}s</span>
+        </div>
+        <div class="speed-item">
+          <span class="speed-label">Bonus</span>
+          <span class="speed-bonus">+{{ speedBonus }}</span>
+        </div>
+      </div>
     </div>
     <div class="panel text-center">
       <h2 class="font-display text-xl text-neon-purple">Computer</h2>
@@ -43,6 +53,14 @@ defineProps({
   },
   wrongWord: {
     type: Boolean,
+    required: true,
+  },
+  speedElapsed: {
+    type: String,
+    required: true,
+  },
+  speedBonus: {
+    type: Number,
     required: true,
   },
   disabled: {

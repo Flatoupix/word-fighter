@@ -55,6 +55,22 @@ body {
     @apply mt-2 text-sm text-neon-yellow/70 font-ui;
   }
 
+  .game-meta {
+    @apply flex items-center justify-center gap-3 text-center;
+  }
+
+  .game-meta__label {
+    @apply text-[10px] uppercase tracking-wide text-neon-yellow/50 font-ui;
+  }
+
+  .game-meta__time {
+    @apply font-numbers text-xl text-neon-orange;
+  }
+
+  .game-timer {
+    @apply mt-3 text-center font-numbers text-4xl text-neon-yellow;
+  }
+
   .word-list-panel {
     @apply flex flex-col;
   }
@@ -97,6 +113,26 @@ body {
 
   .points-added {
     @apply font-numbers text-xl text-neon-orange;
+  }
+
+  .speed-row {
+    @apply mt-3 flex items-center justify-between;
+  }
+
+  .speed-item {
+    @apply flex items-center gap-2 text-[10px] uppercase tracking-wide text-neon-yellow/60 font-ui;
+  }
+
+  .speed-label {
+    @apply text-neon-yellow/50;
+  }
+
+  .speed-value {
+    @apply font-numbers text-sm text-neon-yellow;
+  }
+
+  .speed-bonus {
+    @apply font-numbers text-sm text-neon-orange;
   }
 }
 
