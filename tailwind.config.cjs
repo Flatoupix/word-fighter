@@ -13,8 +13,9 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ['"Road Rage"', 'cursive'],
-        accent: ['"Bungee"', '"Road Rage"', 'cursive'],
+        display: ['"Orbitron"', '"Road Rage"', 'cursive'],
+        accent: ['"Orbitron"', '"Bungee"', '"Road Rage"', 'cursive'],
+        numbers: ['"Orbitron"', 'monospace'],
       },
       boxShadow: {
         glow: '0 0 12px rgba(140, 30, 255, 0.6)',

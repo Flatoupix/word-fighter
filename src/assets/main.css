@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&text=0123456789&display=swap');
 @import './styles/cssanimation.css';
 
 @tailwind base;
@@ -19,7 +20,7 @@ body {
   background-size: cover;
   background-position: top;
   color: #ffd319;
-  font-family: 'Bungee', 'Road Rage', cursive;
+  font-family: 'Orbitron', 'Bungee', 'Road Rage', cursive;
 }
 
 @layer components {
@@ -32,7 +33,7 @@ body {
   }
 
   .score {
-    @apply font-display text-3xl text-neon-yellow;
+    @apply font-numbers text-3xl text-neon-yellow;
   }
 
   .input-field {
