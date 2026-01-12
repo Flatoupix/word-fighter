@@ -1,9 +1,11 @@
 <template>
   <div class="min-h-screen text-neon-yellow">
-    <div class="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-4 py-6 text-glow fade-in">
+    <div class="mx-auto flex min-h-screen max-w-6xl flex-col gap-4 px-3 py-4 text-glow fade-in sm:gap-6 sm:px-4 sm:py-6">
       <header class="text-center">
-        <h1 class="font-display text-5xl tracking-wide text-neon-purple">Word Fighter</h1>
-        <p class="mt-2 text-sm text-neon-yellow/80">Tape un mot pour marquer des points.</p>
+        <h1 class="font-display text-3xl tracking-wide text-neon-purple sm:text-4xl md:text-5xl">
+          Word Fighter
+        </h1>
+        <p class="mt-2 text-xs text-neon-yellow/80 sm:text-sm">Tape un mot pour marquer des points.</p>
       </header>
 
       <ResultScreen
@@ -18,7 +20,7 @@
         @back="goBack"
       />
 
-      <ModeSelector v-else-if="!selectedMode" @select="selectMode" />
+      <ModeSelectScreen v-else-if="!selectedMode" @select="selectMode" />
 
       <PlayerNamesScreen
         v-else-if="selectedMode === 'pvp' && !namesConfirmed"
@@ -28,12 +30,12 @@
         @back="goBack"
       />
 
-      <TimeSelector v-else-if="!selectedDuration" @select="selectDuration" @back="goBack" />
+      <TimeSelectScreen v-else-if="!selectedDuration" @select="selectDuration" @back="goBack" />
 
       <template v-else>
         <section
           v-if="!isStarted"
-          class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm md:max-w-[33vw]"
+          class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm sm:p-4 md:max-w-[33vw]"
         >
           <button
             type="button"
@@ -42,14 +44,16 @@
           >
             ← Back
           </button>
-          <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Prêt ?</h2>
-          <div class="mt-3 text-center font-numbers text-4xl text-neon-yellow">{{ formattedTime }}</div>
+          <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">Prêt ?</h2>
+          <div class="mt-3 text-center font-numbers text-3xl text-neon-yellow sm:text-4xl">
+            {{ formattedTime }}
+          </div>
           <button
             type="button"
-            class="mt-4 w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-5 text-center transition hover:border-neon-purple/80 hover:bg-black/40"
+            class="mt-4 w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-4 text-center transition hover:border-neon-purple/80 hover:bg-black/40 sm:py-5"
             @click="startTimer"
           >
-            <span class="font-display text-2xl text-neon-yellow">Start</span>
+            <span class="font-display text-xl text-neon-yellow sm:text-2xl">Start</span>
           </button>
         </section>
 
@@ -84,12 +88,12 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import MainBoard from './components/modes/MainBoard.vue'
-import ModeSelector from './components/modes/ModeSelector.vue'
-import PlayerNamesScreen from './components/modes/PlayerNamesScreen.vue'
-import ResultScreen from './components/modes/ResultScreen.vue'
-import TimeSelector from './components/modes/TimeSelector.vue'
-import ScoreBoard from './components/ScoreBoard.vue'
+import MainBoard from './components/game/MainBoard.vue'
+import ScoreBoard from './components/game/ScoreBoard.vue'
+import ModeSelectScreen from './screens/ModeSelectScreen.vue'
+import PlayerNamesScreen from './screens/PlayerNamesScreen.vue'
+import ResultScreen from './screens/ResultScreen.vue'
+import TimeSelectScreen from './screens/TimeSelectScreen.vue'
 import { useGameState } from './composables/useGameState'
 
 const selectedMode = ref('')

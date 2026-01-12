@@ -1,5 +1,5 @@
 <template>
-  <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-4 backdrop-blur-sm md:max-w-[33vw]">
+  <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm sm:p-4 md:max-w-[33vw]">
     <button
       type="button"
       class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
@@ -7,15 +7,15 @@
     >
       ← Back
     </button>
-    <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Nom du joueur</h2>
+    <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">Nom du joueur</h2>
     <div class="mt-4">
-      <label class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">
+      <label class="text-[9px] font-ui uppercase tracking-wide text-neon-yellow/50 sm:text-[10px]">
         {{ stepLabel }}
       </label>
       <input
         v-model="currentName"
         type="text"
-        class="mt-1 w-full rounded-md border border-neon-pink/80 bg-black/30 px-3 py-2 font-ui text-sm text-neon-yellow placeholder:text-neon-yellow/40 focus:outline-none focus:ring-2 focus:ring-neon-purple/60"
+        class="mt-1 w-full rounded-md border border-neon-pink/80 bg-black/30 px-3 py-2 font-ui text-xs text-neon-yellow placeholder:text-neon-yellow/40 focus:outline-none focus:ring-2 focus:ring-neon-purple/60 sm:text-sm"
         :placeholder="stepPlaceholder"
         @keydown.enter.prevent="onConfirm"
       />
@@ -25,7 +25,7 @@
       class="mt-5 w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-3 text-center transition hover:border-neon-purple/80 hover:bg-black/40"
       @click="onConfirm"
     >
-      <span class="font-display text-xl text-neon-yellow">{{ buttonLabel }}</span>
+      <span class="font-display text-lg text-neon-yellow sm:text-xl">{{ buttonLabel }}</span>
     </button>
   </section>
 </template>

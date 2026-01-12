@@ -1,5 +1,5 @@
 <template>
-  <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm md:max-w-[33vw]">
+  <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm sm:p-4 md:max-w-[33vw]">
     <button
       type="button"
       class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
@@ -7,7 +7,7 @@
     >
       ← Back
     </button>
-    <h2 class="text-center font-display text-2xl tracking-wide text-neon-yellow">Durée de la partie</h2>
+    <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">Durée de la partie</h2>
     <div class="mt-4 grid gap-4">
       <TimeCard :minutes="1" description="Partie rapide pour s'échauffer." @select="$emit('select', $event)" />
       <TimeCard :minutes="3" description="Le format idéal pour enchaîner." @select="$emit('select', $event)" />
@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import TimeCard from './TimeCard.vue'
+import TimeCard from '../components/modes/TimeCard.vue'
 
 defineEmits(['select', 'back'])
 </script>

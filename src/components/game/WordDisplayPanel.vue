@@ -1,6 +1,6 @@
 <template>
   <main class="flex flex-col justify-center gap-2 rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm">
-    <div v-if="wrongWord" class="text-center font-display text-6xl text-neon-yellow zoomIn">
+    <div v-if="wrongWord" class="text-center font-display text-3xl text-neon-yellow sm:text-5xl md:text-6xl zoomIn">
       FAIIIL
     </div>
     <div class="min-h-[1.5rem] text-center text-neon-yellow/80">
