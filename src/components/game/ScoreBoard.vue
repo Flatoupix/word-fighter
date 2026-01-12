@@ -1,10 +1,10 @@
 <template>
-  <section class="grid gap-2 sm:gap-4 md:grid-cols-[1fr_2fr_1fr]">
-    <div class="order-1 rounded-md border border-neon-pink/70 bg-black/40 p-2 text-center backdrop-blur-sm sm:p-3 md:order-none">
+  <section class="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-[1fr_2fr_1fr]">
+    <div class="order-1 col-span-1 rounded-md border border-neon-pink/70 bg-black/40 p-2 text-center backdrop-blur-sm sm:p-3 md:order-none md:col-span-1">
       <h2 class="font-display text-lg text-neon-yellow sm:text-xl">{{ playerLabel }}</h2>
       <div class="font-numbers text-2xl text-neon-yellow sm:text-3xl">{{ playerPoints }}</div>
     </div>
-    <div class="order-3 rounded-md border border-neon-pink/70 bg-black/40 p-2 backdrop-blur-sm sm:p-3 md:order-none">
+    <div class="order-3 col-span-2 rounded-md border border-neon-pink/70 bg-black/40 p-2 backdrop-blur-sm sm:p-3 md:order-none md:col-span-1">
       <input
         ref="inputRef"
         :value="wordInput"
@@ -30,13 +30,13 @@
         <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50 sm:text-[10px]">Temps</div>
         <div class="font-numbers text-xl text-neon-orange sm:text-xl">{{ formattedTime }}</div>
       </div>
-        <div class="flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 sm:text-[10px]">
+        <div class="ml-auto flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 sm:text-[10px]">
           <span class="text-neon-yellow/50">Bonus</span>
           <span class="font-numbers text-sm text-neon-orange sm:text-sm">+{{ speedBonus }}</span>
         </div>
       </div>
     </div>
-    <div class="order-2 rounded-md border border-neon-pink/70 bg-black/40 p-2 text-center backdrop-blur-sm sm:p-3 md:order-none">
+    <div class="order-2 col-span-1 rounded-md border border-neon-pink/70 bg-black/40 p-2 text-center backdrop-blur-sm sm:p-3 md:order-none md:col-span-1">
       <h2 class="font-display text-lg text-neon-purple sm:text-xl">{{ opponentLabel }}</h2>
       <div class="font-numbers text-2xl text-neon-yellow sm:text-3xl">{{ comPoints }}</div>
     </div>
