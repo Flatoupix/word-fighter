@@ -27,6 +27,7 @@ export const useGameState = ({
   const speedElapsed = ref(0)
   const speedBonusAwarded = ref(0)
   const prefixRepeatLength = ref(0)
+  const frequencyBonus = ref(0)
   const ignoreNextPrefix = ref(false)
   let speedTimerId = null
 
@@ -52,6 +53,7 @@ export const useGameState = ({
   const isSoloMode = computed(() => modeRef.value === 'solo')
   const isVsComputer = computed(() => modeRef.value !== 'pvp' && modeRef.value !== 'solo')
   const isGrammarWar = computed(() => gameTypeRef.value === 'grammar-war')
+  const isKamoulox = computed(() => gameTypeRef.value === 'kamoulox')
 
   const wordFail = () => {
     playAtDuring(failUrl)
@@ -68,9 +70,11 @@ export const useGameState = ({
     wordListDisp.value.push({
       index: wordListDisp.value.length,
       text: 'FAIL',
+      normalized: '',
       description: 'Mot invalide',
       visible: false,
       owner,
+      tags: [],
     })
     wrongWord.value = true
     if (speedTimerId) {
@@ -80,6 +84,7 @@ export const useGameState = ({
     speedElapsed.value = 0
     speedBonusAwarded.value = 0
     prefixRepeatLength.value = 0
+    frequencyBonus.value = 0
     ignoreNextPrefix.value = true
     setTimeout(() => {
       wrongWord.value = false
@@ -149,6 +154,16 @@ export const useGameState = ({
     }, 3000)
   }
 
+  const addBonusPoints = (points) => {
+    if (!points) {
+      return
+    }
+    pointsAdded.value.push(points)
+    setTimeout(() => {
+      pointsAdded.value.shift()
+    }, 3000)
+  }
+
   const isAdjacentLetter = (firstWord, secondWord) => {
     if (wordList.value.length > 1) {
       const firstIndex = letters.indexOf(firstWord[0])
@@ -195,6 +210,16 @@ export const useGameState = ({
   }
 
   const scoreValue = computed(() => totalLetters(wordPlayed.value))
+  const computeFrequencyBonus = (freqForm, freqLemma) => {
+    const form = Number(freqForm) || 0
+    const lemma = Number(freqLemma) || 0
+    const value = form > 0 ? form : lemma
+    if (value <= 0) {
+      return 0
+    }
+    const bonus = Math.round(Math.log10(value + 1) * 4)
+    return Math.min(10, bonus)
+  }
   const speedBonus = computed(() => {
     const maxTime = 5
     const maxBonus = 10
@@ -236,6 +261,40 @@ export const useGameState = ({
     if (speedBonusAwarded.value > 0) {
       calcPoints.value += speedBonusAwarded.value
       speedBonusAwarded.value = 0
+    }
+    if (frequencyBonus.value > 0) {
+      calcPoints.value += frequencyBonus.value
+      frequencyBonus.value = 0
+    }
+    if (isKamoulox.value) {
+      const current = wordListDisp.value[wordListDisp.value.length - 1]
+      const previous = wordListDisp.value[wordListDisp.value.length - 2]
+      if (current && previous) {
+        const currentTags = current.tags || []
+        const previousTags = previous.tags || []
+        const lengthDiff = Math.abs(current.text.length - previous.text.length)
+        const hasTagOverlap = currentTags.some((tag) => previousTags.includes(tag))
+        const lemmaDiff =
+          (current.normalized || normalizeWord(current.text)) !==
+          (previous.normalized || normalizeWord(previous.text))
+        let bonus = 0
+        if (currentTags.length && previousTags.length && !hasTagOverlap) {
+          bonus += 1
+        }
+        if (lengthDiff >= 2) {
+          bonus += 1
+        }
+        if (lemmaDiff) {
+          bonus += 1
+        }
+        if (lengthDiff >= 4 && bonus > 0) {
+          bonus *= 2
+        }
+        if (bonus > 0) {
+          calcPoints.value += bonus
+          addBonusPoints(bonus)
+        }
+      }
     }
   }
 
@@ -342,9 +401,11 @@ export const useGameState = ({
     if (isVsComputer.value && owner === 'computer') {
       speedBonusAwarded.value = 0
     }
+    frequencyBonus.value = computeFrequencyBonus(entry.freqForm, entry.freqLemma)
     const wordObj = {
       index: wordList.value.length,
       text: entry.raw,
+      normalized: entry.normalized,
       description: formatFrequency(entry.freqLemma, entry.freqForm),
       visible: false,
       owner,
@@ -473,6 +534,7 @@ export const useGameState = ({
     stopSpeedTimer()
     speedElapsed.value = 0
     speedBonusAwarded.value = 0
+    frequencyBonus.value = 0
   }
 
   const resetGame = () => {

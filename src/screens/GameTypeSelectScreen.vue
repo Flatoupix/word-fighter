@@ -11,6 +11,12 @@
         @select="$emit('select', $event)"
       />
       <ModeCard
+        mode="kamoulox"
+        title="Kamoulox"
+        description="Plus l'écart est grand, plus tu scores."
+        @select="$emit('select', $event)"
+      />
+      <ModeCard
         mode="grammar-war"
         title="Grammar War"
         description="Un type grammatical imposé."

@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.3.8
+## 0.4.0
+
+- Add Kamoulox game type with combo-based bonuses (tags, length, lemma).
+- Add frequency-based bonus (freqForm with lemma fallback).
+
+## 0.3.9
 
 - Enforce Grammar War tag validation for all inputs.
 
