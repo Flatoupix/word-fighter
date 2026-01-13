@@ -319,7 +319,11 @@ export const useGameState = ({
       wordFail()
       return
     }
-    if (isGrammarWar.value && grammarTagRef.value) {
+    if (isGrammarWar.value) {
+      if (!grammarTagRef.value) {
+        wordFail()
+        return
+      }
       if (!entry.tags || !entry.tags.includes(grammarTagRef.value)) {
         wordFail()
         return

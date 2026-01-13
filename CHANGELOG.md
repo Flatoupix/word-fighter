@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.8
+
+- Enforce Grammar War tag validation for all inputs.
+
 ## 0.3.7
 
 - Deduct 1 second from the timer on each fail.
