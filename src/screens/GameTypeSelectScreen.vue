@@ -1,5 +1,5 @@
 <template>
-  <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm sm:p-4 md:max-w-[30rem]">
+  <section class="mx-auto my-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm sm:p-4 md:max-w-[30rem]">
     <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">
       Choisis ton jeu
     </h2>
