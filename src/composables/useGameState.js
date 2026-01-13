@@ -44,11 +44,20 @@ export const useGameState = ({
     return '3em'
   })
 
-  const isVsComputer = computed(() => modeRef.value !== 'pvp')
+  const isSoloMode = computed(() => modeRef.value === 'solo')
+  const isVsComputer = computed(() => modeRef.value !== 'pvp' && modeRef.value !== 'solo')
   const isGrammarWar = computed(() => gameTypeRef.value === 'grammar-war')
 
   const wordFail = () => {
-    const owner = isVsComputer.value ? (computerTurn.value ? 'computer' : 'player') : computerTurn.value ? 'player2' : 'player1'
+    const owner = isSoloMode.value
+      ? 'player'
+      : isVsComputer.value
+        ? computerTurn.value
+          ? 'computer'
+          : 'player'
+        : computerTurn.value
+          ? 'player2'
+          : 'player1'
     wordListDisp.value.push({
       index: wordListDisp.value.length,
       text: 'FAIL',
@@ -73,7 +82,9 @@ export const useGameState = ({
       pointsAdded.value = []
       isTyping.value = false
       if (gameActive.value) {
-        if (computerTurn.value) {
+        if (isSoloMode.value) {
+          computerTurn.value = false
+        } else if (computerTurn.value) {
           computerTurn.value = false
         } else {
           computerTurn.value = true
@@ -256,6 +267,9 @@ export const useGameState = ({
         if (isVsComputer.value) {
           comPlay()
         }
+        if (isSoloMode.value) {
+          computerTurn.value = false
+        }
       }
       calcPoints.value = 0
     }
@@ -282,7 +296,15 @@ export const useGameState = ({
       }
     }
 
-    const owner = isVsComputer.value ? (computerTurn.value ? 'computer' : 'player') : computerTurn.value ? 'player2' : 'player1'
+    const owner = isSoloMode.value
+      ? 'player'
+      : isVsComputer.value
+        ? computerTurn.value
+          ? 'computer'
+          : 'player'
+        : computerTurn.value
+          ? 'player2'
+          : 'player1'
     if (isVsComputer.value && owner === 'computer') {
       speedBonusAwarded.value = 0
     }
@@ -329,7 +351,7 @@ export const useGameState = ({
   }
 
   const addWord = (word) => {
-    if (!gameActive.value || isTyping.value || (isVsComputer.value && computerTurn.value)) {
+    if (!gameActive.value || isTyping.value || ((isVsComputer.value || isSoloMode.value) && computerTurn.value)) {
       return
     }
     if (!word || word.trim().length === 0) {
@@ -370,9 +392,9 @@ export const useGameState = ({
   }
 
   watch(
-    () => [computerTurn.value, gameActive.value, isTyping.value, isVsComputer.value],
-    ([isComputerTurn, isActive, typing, vsComputer]) => {
-      if (isActive && !typing && (!vsComputer || !isComputerTurn)) {
+    () => [computerTurn.value, gameActive.value, isTyping.value, isVsComputer.value, isSoloMode.value],
+    ([isComputerTurn, isActive, typing, vsComputer, soloMode]) => {
+      if (isActive && !typing && ((!vsComputer && !soloMode) || !isComputerTurn)) {
         if (!speedTimerId) {
           startSpeedTimer()
         }
@@ -390,6 +412,22 @@ export const useGameState = ({
     }
     if (computerTurn.value && !isTyping.value) {
       comPlay()
+    }
+  }
+
+  const startSoloSeed = () => {
+    if (!gameActive.value || !isSoloMode.value) {
+      return
+    }
+    const tag = isGrammarWar.value ? grammarTagRef.value : ''
+    if (isGrammarWar.value && !tag) {
+      return
+    }
+    const randomWord = pickWeightedWord(tag)
+    if (randomWord) {
+      computerTurn.value = true
+      isValidWord(randomWord)
+      computerTurn.value = false
     }
   }
 
@@ -444,6 +482,7 @@ export const useGameState = ({
     startGame,
     stopGame,
     resetGame,
+    startSoloSeed,
     addWord,
     toggleWordVisibility,
   }

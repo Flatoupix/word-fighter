@@ -79,7 +79,7 @@
             :speedBonus="isStarted ? speedBonus : 0"
             :playerLabel="playerOneLabel"
             :opponentLabel="playerTwoLabel"
-            :disabled="isTyping || !isStarted || (selectedMode !== 'pvp' && computerTurn)"
+            :disabled="isTyping || !isStarted || ((selectedMode !== 'pvp' && selectedMode !== 'solo') && computerTurn)"
             @submit="onSubmit"
           />
           <div class="text-center text-xs text-neon-yellow/60">
@@ -135,6 +135,7 @@ const {
   startGame,
   stopGame,
   resetGame,
+  startSoloSeed,
   addWord,
   toggleWordVisibility,
 } = useGameState({ modeRef: selectedMode, gameTypeRef: gameType, grammarTagRef: grammarTag })
@@ -148,6 +149,7 @@ const resultWinnerLabel = ref('')
 const resultWinnerScore = ref(0)
 let timerId = null
 const modeLabel = computed(() => {
+  if (selectedMode.value === 'solo') return 'Solo'
   if (selectedMode.value === 'pvc') return 'Player VS Computer'
   if (selectedMode.value === 'pvp') return 'Player VS Player'
   if (selectedMode.value === 'online') return 'Online Battle'
@@ -156,6 +158,12 @@ const modeLabel = computed(() => {
 const playerOneLabel = computed(() => (selectedMode.value === 'pvp' ? playerOneName.value : 'Player'))
 const playerTwoLabel = computed(() => (selectedMode.value === 'pvp' ? playerTwoName.value : 'Computer'))
 const durationLabel = computed(() => (selectedDuration.value ? `${selectedDuration.value} min` : ''))
+const grammarTagLabel = computed(() => {
+  if (grammarTag.value === 'VER') return 'Verbes'
+  if (grammarTag.value === 'ADJ') return 'Adjectifs'
+  if (grammarTag.value === 'NOM') return 'Noms'
+  return ''
+})
 const formattedTime = computed(() => {
   const minutes = Math.floor(timeLeft.value / 60)
   const seconds = timeLeft.value % 60
@@ -294,6 +302,9 @@ const startTimer = () => {
   isStarted.value = true
   showResults.value = false
   startGame()
+  if (selectedMode.value === 'solo') {
+    startSoloSeed()
+  }
   timerId = setInterval(() => {
     if (timeLeft.value > 0) {
       timeLeft.value -= 1
@@ -325,9 +336,3 @@ onBeforeUnmount(() => {
   stopTimer()
 })
 </script>
-const grammarTagLabel = computed(() => {
-  if (grammarTag.value === 'VER') return 'Verbes'
-  if (grammarTag.value === 'ADJ') return 'Adjectifs'
-  if (grammarTag.value === 'NOM') return 'Noms'
-  return ''
-})

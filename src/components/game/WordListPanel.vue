@@ -1,7 +1,7 @@
 <template>
   <aside class="flex min-h-0 flex-col rounded-md border border-neon-pink/70 bg-black/40 p-2 backdrop-blur-sm sm:p-3">
     <h2 class="text-center font-display text-lg tracking-wide text-neon-yellow sm:text-xl md:text-2xl">Mots</h2>
-    <ul ref="listRef" class="mt-3 max-h-[40vh] flex-1 space-y-2 overflow-y-auto pr-1 md:max-h-none">
+    <ul ref="listRef" class="mt-3 max-h-[40vh] flex-1 space-y-2 overflow-y-auto pr-1 md:max-h-[18rem]">
       <li v-for="(word, index) in words" :key="index">
         <button
           type="button"

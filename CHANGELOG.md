@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Added Solo mode (single player with one seeded word).
+
 ## 0.3.0
 
 - Added Grammar War flow with game type selection and grammatical tag selection.

@@ -12,6 +12,12 @@
     </h2>
     <div class="mt-4 grid gap-4">
       <ModeCard
+        mode="solo"
+        title="Solo"
+        description="Un mot aléatoire, puis toi seul."
+        @select="$emit('select', $event)"
+      />
+      <ModeCard
         mode="pvc"
         title="Player VS Computer"
         description="Affronte l'IA avec des mots aléatoires."
