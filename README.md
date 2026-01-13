@@ -4,6 +4,8 @@
 
 #### The game is about entering a series of words and scoring as many points as possible.
 
+Current version: 0.3.0
+
 ## Current Game
 
 ---
@@ -89,4 +91,4 @@
 
 ## Changelog
 
-Voir `CHANGELOG.md`.
+See `CHANGELOG.md`.

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+- Added Grammar War flow with game type selection and grammatical tag selection.
+- Added tag-aware validation and weighted word picks by grammatical category.
+- Added player name entry as a two-step flow (Player 1 then Player 2).
+- Added back navigation to all selection screens.
+- Component reorg into screens vs game components.
+- Mobile layout tweaks (stacking, spacing, type sizes, input focus).
+- Word list auto-scroll and visual fade improvements.
+
 ## 0.2.3
 
 - Added mode and duration selection screens.
