@@ -20,7 +20,15 @@
         @back="goBack"
       />
 
-      <ModeSelectScreen v-else-if="!selectedMode" @select="selectMode" />
+      <GameTypeSelectScreen v-else-if="!gameType" @select="selectGameType" />
+
+      <GrammarTagSelectScreen
+        v-else-if="gameType === 'grammar-war' && !grammarTag"
+        @select="selectGrammarTag"
+        @back="goBack"
+      />
+
+      <ModeSelectScreen v-else-if="!selectedMode" @select="selectMode" @back="goBack" />
 
       <PlayerNamesScreen
         v-else-if="selectedMode === 'pvp' && !namesConfirmed"
@@ -75,7 +83,8 @@
             @submit="onSubmit"
           />
           <div class="text-center text-xs text-neon-yellow/60">
-            Mode: {{ modeLabel }} · Temps: {{ durationLabel }}
+            Mode: {{ modeLabel }} · Temps: {{ durationLabel
+            }}<template v-if="grammarTagLabel"> · Tag: {{ grammarTagLabel }}</template>
             <button type="button" class="ml-2 text-neon-purple/80 hover:text-neon-purple" @click="resetMode">
               changer
             </button>
@@ -90,12 +99,16 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import MainBoard from './components/game/MainBoard.vue'
 import ScoreBoard from './components/game/ScoreBoard.vue'
+import GameTypeSelectScreen from './screens/GameTypeSelectScreen.vue'
+import GrammarTagSelectScreen from './screens/GrammarTagSelectScreen.vue'
 import ModeSelectScreen from './screens/ModeSelectScreen.vue'
 import PlayerNamesScreen from './screens/PlayerNamesScreen.vue'
 import ResultScreen from './screens/ResultScreen.vue'
 import TimeSelectScreen from './screens/TimeSelectScreen.vue'
 import { useGameState } from './composables/useGameState'
 
+const gameType = ref('')
+const grammarTag = ref('')
 const selectedMode = ref('')
 const playerOneName = ref('Player 1')
 const playerTwoName = ref('Player 2')
@@ -124,7 +137,7 @@ const {
   resetGame,
   addWord,
   toggleWordVisibility,
-} = useGameState(selectedMode)
+} = useGameState({ modeRef: selectedMode, gameTypeRef: gameType, grammarTagRef: grammarTag })
 const selectedDuration = ref(0)
 const isStarted = ref(false)
 const timeLeft = ref(0)
@@ -163,6 +176,15 @@ const mainBoardState = computed(() => ({
 }))
 const scoreBoardRef = ref(null)
 
+const selectGameType = (type) => {
+  gameType.value = type
+  grammarTag.value = ''
+}
+
+const selectGrammarTag = (tag) => {
+  grammarTag.value = tag
+}
+
 const selectMode = (mode) => {
   selectedMode.value = mode
   if (mode !== 'pvp') {
@@ -178,6 +200,8 @@ const selectDuration = (minutes) => {
 }
 
 const resetMode = () => {
+  gameType.value = ''
+  grammarTag.value = ''
   selectedMode.value = ''
   selectedDuration.value = 0
   timeLeft.value = 0
@@ -213,15 +237,20 @@ const goBack = () => {
     stopTimer()
     return
   }
-  if (selectedMode.value === 'pvp' && namesConfirmed.value) {
-    namesConfirmed.value = false
-    return
-  }
   if (selectedMode.value) {
     selectedMode.value = ''
     namesConfirmed.value = false
     playerOneName.value = 'Player 1'
     playerTwoName.value = 'Player 2'
+    return
+  }
+  if (gameType.value === 'grammar-war' && grammarTag.value) {
+    grammarTag.value = ''
+    return
+  }
+  if (gameType.value) {
+    gameType.value = ''
+    return
   }
 }
 
@@ -296,3 +325,9 @@ onBeforeUnmount(() => {
   stopTimer()
 })
 </script>
+const grammarTagLabel = computed(() => {
+  if (grammarTag.value === 'VER') return 'Verbes'
+  if (grammarTag.value === 'ADJ') return 'Adjectifs'
+  if (grammarTag.value === 'NOM') return 'Noms'
+  return ''
+})

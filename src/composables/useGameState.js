@@ -6,7 +6,11 @@ import { formatFrequency, normalizeWord, pickWeightedWord, resolveEntry } from '
 const letters = 'abcdefghijklmnopqrstuvwxyz'
 const objectLetters = scrabble.letters
 
-export const useGameState = (modeRef = ref('pvc')) => {
+export const useGameState = ({
+  modeRef = ref('pvc'),
+  gameTypeRef = ref('word-fight'),
+  grammarTagRef = ref(''),
+} = {}) => {
   const wordInput = ref('')
   const wordList = ref([])
   const wordListDisp = ref([])
@@ -41,6 +45,7 @@ export const useGameState = (modeRef = ref('pvc')) => {
   })
 
   const isVsComputer = computed(() => modeRef.value !== 'pvp')
+  const isGrammarWar = computed(() => gameTypeRef.value === 'grammar-war')
 
   const wordFail = () => {
     const owner = isVsComputer.value ? (computerTurn.value ? 'computer' : 'player') : computerTurn.value ? 'player2' : 'player1'
@@ -270,6 +275,12 @@ export const useGameState = (modeRef = ref('pvc')) => {
       wordFail()
       return
     }
+    if (isGrammarWar.value && grammarTagRef.value) {
+      if (!entry.tags || !entry.tags.includes(grammarTagRef.value)) {
+        wordFail()
+        return
+      }
+    }
 
     const owner = isVsComputer.value ? (computerTurn.value ? 'computer' : 'player') : computerTurn.value ? 'player2' : 'player1'
     if (isVsComputer.value && owner === 'computer') {
@@ -281,6 +292,7 @@ export const useGameState = (modeRef = ref('pvc')) => {
       description: formatFrequency(entry.freqLemma, entry.freqForm),
       visible: false,
       owner,
+      tags: entry.tags || [],
     }
 
     textType(entry.raw)
@@ -292,7 +304,11 @@ export const useGameState = (modeRef = ref('pvc')) => {
     if (!gameActive.value) {
       return
     }
-    const randomWord = pickWeightedWord()
+    const tag = isGrammarWar.value ? grammarTagRef.value : ''
+    if (isGrammarWar.value && !tag) {
+      return
+    }
+    const randomWord = pickWeightedWord(tag)
     if (!randomWord) {
       return
     }

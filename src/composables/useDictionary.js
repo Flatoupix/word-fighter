@@ -1,10 +1,11 @@
-import wordsDictionary from '../assets/words/words_fr.json'
+import wordsDictionary from '../assets/words/words_fr_tagged.json'
 
 const MIN_WORD_LENGTH = 2
 const wordKeys = Object.keys(wordsDictionary)
 const normalizedLookup = {}
 const cumulativeWeights = []
 let totalWeight = 0
+const tagIndex = {}
 
 const removeAccents = (str) => {
   const accents = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž'
@@ -37,6 +38,7 @@ for (const word of wordKeys) {
   const normalized = normalizeWord(word)
   const freqLemma = Number(entry.freqLemma) || 0
   const freqForm = Number(entry.freqForm) || 0
+  const tags = Array.isArray(entry.tags) ? entry.tags : []
   const weight = selectWeight(freqLemma, freqForm)
 
   totalWeight += weight
@@ -49,8 +51,23 @@ for (const word of wordKeys) {
       normalized,
       freqLemma,
       freqForm,
+      tags,
       weight,
     }
+  }
+
+  for (const tag of tags) {
+    if (!tagIndex[tag]) {
+      tagIndex[tag] = {
+        keys: [],
+        cumulativeWeights: [],
+        totalWeight: 0,
+      }
+    }
+    const bucket = tagIndex[tag]
+    bucket.totalWeight += weight
+    bucket.keys.push(word)
+    bucket.cumulativeWeights.push(bucket.totalWeight)
   }
 }
 
@@ -63,10 +80,32 @@ const formatFrequency = (freqLemma, freqForm) => {
   return `freqLemma: ${lemma.toFixed(2)} | freqForm: ${form.toFixed(2)}`
 }
 
-const pickWeightedWord = () => {
+const pickWeightedWord = (tag) => {
   if (wordKeys.length === 0) {
     return null
   }
+  const bucket = tag ? tagIndex[tag] : null
+  if (bucket && bucket.keys.length === 0) {
+    return null
+  }
+
+  if (bucket) {
+    const target = Math.random() * bucket.totalWeight
+    let low = 0
+    let high = bucket.cumulativeWeights.length - 1
+
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2)
+      if (target <= bucket.cumulativeWeights[mid]) {
+        high = mid
+      } else {
+        low = mid + 1
+      }
+    }
+
+    return bucket.keys[low]
+  }
+
   if (totalWeight <= 0) {
     return wordKeys[Math.floor(Math.random() * wordKeys.length)]
   }
@@ -107,6 +146,7 @@ const resolveEntry = (input) => {
       normalized,
       freqLemma: Number(exactEntry.freqLemma) || 0,
       freqForm: Number(exactEntry.freqForm) || 0,
+      tags: Array.isArray(exactEntry.tags) ? exactEntry.tags : [],
     }
   }
 
@@ -117,6 +157,7 @@ const resolveEntry = (input) => {
       normalized: normalizedEntry.normalized,
       freqLemma: normalizedEntry.freqLemma,
       freqForm: normalizedEntry.freqForm,
+      tags: normalizedEntry.tags || [],
     }
   }
 
