@@ -2,6 +2,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import scrabble from '../assets/words/scrabble.json'
 import wooshUrl from '../assets/audio/woosh.mp3'
 import failUrl from '../assets/audio/fail.mp3'
+import minusUrl from '../assets/audio/minus.mp3'
 import { formatFrequency, normalizeWord, pickWeightedWord, resolveEntry } from './useDictionary'
 
 const letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -11,6 +12,7 @@ export const useGameState = ({
   modeRef = ref('pvc'),
   gameTypeRef = ref('word-fight'),
   grammarTagRef = ref(''),
+  onFailPenalty = () => {},
 } = {}) => {
   const wordInput = ref('')
   const wordList = ref([])
@@ -24,6 +26,8 @@ export const useGameState = ({
   const gameActive = ref(false)
   const speedElapsed = ref(0)
   const speedBonusAwarded = ref(0)
+  const prefixRepeatLength = ref(0)
+  const ignoreNextPrefix = ref(false)
   let speedTimerId = null
 
   const playerPoints = ref(0)
@@ -51,6 +55,7 @@ export const useGameState = ({
 
   const wordFail = () => {
     playAtDuring(failUrl)
+    onFailPenalty()
     const owner = isSoloMode.value
       ? 'player'
       : isVsComputer.value
@@ -74,6 +79,8 @@ export const useGameState = ({
     }
     speedElapsed.value = 0
     speedBonusAwarded.value = 0
+    prefixRepeatLength.value = 0
+    ignoreNextPrefix.value = true
     setTimeout(() => {
       wrongWord.value = false
       wordPlayed.value = ''
@@ -128,14 +135,15 @@ export const useGameState = ({
     }
   }
 
-  const addPoint = (currentLetter) => {
+  const addPoint = (currentLetter, forcedPoints = null) => {
     const letter = objectLetters[currentLetter]
     if (!letter) {
       return
     }
 
-    pointsAdded.value.push(letter.points)
-    calcPoints.value += letter.points
+    const points = forcedPoints === null ? letter.points : forcedPoints
+    pointsAdded.value.push(points)
+    calcPoints.value += points
     setTimeout(() => {
       pointsAdded.value.shift()
     }, 3000)
@@ -232,6 +240,14 @@ export const useGameState = ({
   }
 
   const randomDelay = (max) => Math.floor(max * Math.random())
+  const getCommonPrefixLength = (first, second) => {
+    const limit = Math.min(first.length, second.length)
+    let length = 0
+    while (length < limit && first[length] === second[length]) {
+      length += 1
+    }
+    return length
+  }
 
   const typeWriter = (word) => {
     if (!gameActive.value) {
@@ -242,6 +258,10 @@ export const useGameState = ({
     }
     if (index.value === 0) {
       refWord.value = word || wordInput.value
+      const prevWord = wordList.value.length ? wordList.value[wordList.value.length - 1] : ''
+      const normalizedCurrent = normalizeWord(refWord.value)
+      prefixRepeatLength.value = ignoreNextPrefix.value ? 0 : prevWord ? getCommonPrefixLength(prevWord, normalizedCurrent) : 0
+      ignoreNextPrefix.value = false
     }
     wordInput.value = ''
 
@@ -249,8 +269,15 @@ export const useGameState = ({
       isTyping.value = true
       const nextLetterRaw = refWord.value.charAt(index.value)
       const nextLetterNormalized = normalizeWord(nextLetterRaw)
+      const isPrefixRepeat = prefixRepeatLength.value > 0 && index.value < prefixRepeatLength.value
+
       wordPlayed.value += nextLetterRaw
-      addPoint(nextLetterNormalized)
+      if (isPrefixRepeat) {
+        addPoint(nextLetterNormalized, 0)
+        playAtDuring(minusUrl)
+      } else {
+        addPoint(nextLetterNormalized)
+      }
       index.value += 1
       playAtDuring(wooshUrl)
       setTimeout(() => typeWriter(), randomDelay(300))
@@ -273,6 +300,7 @@ export const useGameState = ({
           computerTurn.value = false
         }
       }
+      prefixRepeatLength.value = 0
       calcPoints.value = 0
     }
   }

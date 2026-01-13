@@ -138,7 +138,16 @@ const {
   startSoloSeed,
   addWord,
   toggleWordVisibility,
-} = useGameState({ modeRef: selectedMode, gameTypeRef: gameType, grammarTagRef: grammarTag })
+} = useGameState({
+  modeRef: selectedMode,
+  gameTypeRef: gameType,
+  grammarTagRef: grammarTag,
+  onFailPenalty: () => {
+    if (timeLeft.value > 0) {
+      timeLeft.value -= 1
+    }
+  },
+})
 const selectedDuration = ref(0)
 const isStarted = ref(false)
 const timeLeft = ref(0)

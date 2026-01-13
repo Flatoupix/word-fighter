@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.7
+
+- Deduct 1 second from the timer on each fail.
+
+## 0.3.6
+
+- Reset prefix-repeat rule after a fail.
+
+## 0.3.5
+
+- Apply +0 only for repeated prefix letters (with minus sound per letter).
+
+## 0.3.4
+
+- Add prefix-repeat rule: repeated starting letters score +0 and play minus sound.
+
 ## 0.3.3
 
 - Switch fail sound asset to MP3.
