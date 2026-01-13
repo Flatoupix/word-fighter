@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.3
+
+- Switch fail sound asset to MP3.
+
+## 0.3.2
+
+- Play fail sound on invalid word.
+
 ## 0.3.1
 
 - Added Solo mode (single player with one seeded word).

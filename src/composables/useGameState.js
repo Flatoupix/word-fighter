@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import scrabble from '../assets/words/scrabble.json'
 import wooshUrl from '../assets/audio/woosh.mp3'
+import failUrl from '../assets/audio/fail.mp3'
 import { formatFrequency, normalizeWord, pickWeightedWord, resolveEntry } from './useDictionary'
 
 const letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -49,6 +50,7 @@ export const useGameState = ({
   const isGrammarWar = computed(() => gameTypeRef.value === 'grammar-war')
 
   const wordFail = () => {
+    playAtDuring(failUrl)
     const owner = isSoloMode.value
       ? 'player'
       : isVsComputer.value
