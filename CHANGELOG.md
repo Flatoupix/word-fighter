@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.5
+
+- Update AGENT.md to include `git add .` before commits.
+
+## 0.4.4
+
+- Add AGENT.md notes for future project conventions.
+
 ## 0.4.3
 
 - Fix online lobby slots by keeping unique player ids per room/session.
