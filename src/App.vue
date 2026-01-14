@@ -20,6 +20,15 @@
         @back="goBack"
       />
 
+      <OnlineRoomScreen
+        v-else-if="(selectedMode === 'online' || hasRoomParam) && !isStarted"
+        :gameType="gameType"
+        :grammarTag="grammarTag"
+        @start="startOnlineSession"
+        @syncSettings="syncOnlineSettings"
+        @back="goBack"
+      />
+
       <GameTypeSelectScreen v-else-if="!gameType" @select="selectGameType" />
 
       <GrammarTagSelectScreen
@@ -38,7 +47,11 @@
         @back="goBack"
       />
 
-      <TimeSelectScreen v-else-if="!selectedDuration" @select="selectDuration" @back="goBack" />
+      <TimeSelectScreen
+        v-else-if="!selectedDuration && selectedMode !== 'online'"
+        @select="selectDuration"
+        @back="goBack"
+      />
 
       <template v-else>
         <section
@@ -102,6 +115,7 @@ import ScoreBoard from './components/game/ScoreBoard.vue'
 import GameTypeSelectScreen from './screens/GameTypeSelectScreen.vue'
 import GrammarTagSelectScreen from './screens/GrammarTagSelectScreen.vue'
 import ModeSelectScreen from './screens/ModeSelectScreen.vue'
+import OnlineRoomScreen from './screens/OnlineRoomScreen.vue'
 import PlayerNamesScreen from './screens/PlayerNamesScreen.vue'
 import ResultScreen from './screens/ResultScreen.vue'
 import TimeSelectScreen from './screens/TimeSelectScreen.vue'
@@ -110,6 +124,7 @@ import { useGameState } from './composables/useGameState'
 const gameType = ref('')
 const grammarTag = ref('')
 const selectedMode = ref('')
+const hasRoomParam = ref(false)
 const playerOneName = ref('Player 1')
 const playerTwoName = ref('Player 2')
 const namesConfirmed = ref(false)
@@ -211,6 +226,18 @@ const selectMode = (mode) => {
   }
 }
 
+const syncOnlineSettings = ({ gameType: type, tag, duration }) => {
+  if (type) {
+    gameType.value = type
+  }
+  if (tag !== undefined) {
+    grammarTag.value = tag
+  }
+  if (duration) {
+    selectedDuration.value = duration
+  }
+}
+
 const selectDuration = (minutes) => {
   selectedDuration.value = minutes
   timeLeft.value = minutes * 60
@@ -220,6 +247,7 @@ const resetMode = () => {
   gameType.value = ''
   grammarTag.value = ''
   selectedMode.value = ''
+  clearRoomParam()
   selectedDuration.value = 0
   timeLeft.value = 0
   isStarted.value = false
@@ -248,6 +276,14 @@ const goBack = () => {
   if (isStarted.value) {
     return
   }
+  if (selectedMode.value === 'online') {
+    selectedMode.value = ''
+    clearRoomParam()
+    selectedDuration.value = 0
+    timeLeft.value = 0
+    stopTimer()
+    return
+  }
   if (selectedDuration.value) {
     selectedDuration.value = 0
     timeLeft.value = 0
@@ -256,6 +292,7 @@ const goBack = () => {
   }
   if (selectedMode.value) {
     selectedMode.value = ''
+    clearRoomParam()
     namesConfirmed.value = false
     playerOneName.value = 'Player 1'
     playerTwoName.value = 'Player 2'
@@ -323,6 +360,24 @@ const startTimer = () => {
   }, 1000)
 }
 
+const startOnlineSession = ({ duration }) => {
+  if (isStarted.value) {
+    return
+  }
+  if (!duration) {
+    return
+  }
+  selectedDuration.value = duration
+  startTimer()
+}
+
+const clearRoomParam = () => {
+  const url = new URL(window.location.href)
+  url.searchParams.delete('room')
+  window.history.replaceState({}, '', url.toString())
+  hasRoomParam.value = false
+}
+
 const onSubmit = () => {
   addWord(wordInput.value)
 }
@@ -344,4 +399,15 @@ watch(
 onBeforeUnmount(() => {
   stopTimer()
 })
+
+const initRoomParam = () => {
+  const params = new URLSearchParams(window.location.search)
+  const roomParam = params.get('room')
+  if (roomParam) {
+    hasRoomParam.value = true
+    selectedMode.value = 'online'
+  }
+}
+
+initRoomParam()
 </script>

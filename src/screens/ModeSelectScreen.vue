@@ -32,7 +32,7 @@
       <ModeCard
         mode="online"
         title="Online Battle"
-        description="Bientôt dispo, prépare-toi."
+        description="Prototype de lobby (Supabase)."
         @select="$emit('select', $event)"
       />
     </div>

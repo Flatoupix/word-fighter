@@ -4,7 +4,7 @@
 
 #### The game is about entering a series of words and scoring as many points as possible.
 
-Current version: 0.4.0
+Current version: 0.4.2
 
 ## Current Game
 
@@ -86,6 +86,16 @@ Current version: 0.4.0
 - `yarn dev`
 - `yarn build`
 - `yarn preview`
+
+---
+
+## Online Prototype (Supabase)
+
+1) Create a Supabase project and run `supabase/schema.sql` in the SQL editor.
+2) Copy `.env.example` to `.env` and set:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+3) Start the app and choose Online mode (players are prompted for a name when they join via a room link).
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "word-fighter",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
     "vue": "^3.4.38"
   },
   "devDependencies": {

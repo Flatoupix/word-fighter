@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.2
+
+- Require a player name before joining an online room.
+- Add polling fallback to keep online lobby state in sync.
+- Restore host privileges on refresh and sync duration changes.
+- Fix back navigation for online mode.
+
+## 0.4.1
+
+- Add online lobby prototype (Supabase rooms/players + join by link).
+
 ## 0.4.0
 
 - Add Kamoulox game type with combo-based bonuses (tags, length, lemma).

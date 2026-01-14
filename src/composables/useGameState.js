@@ -51,7 +51,7 @@ export const useGameState = ({
   })
 
   const isSoloMode = computed(() => modeRef.value === 'solo')
-  const isVsComputer = computed(() => modeRef.value !== 'pvp' && modeRef.value !== 'solo')
+  const isVsComputer = computed(() => modeRef.value === 'pvc')
   const isGrammarWar = computed(() => gameTypeRef.value === 'grammar-war')
   const isKamoulox = computed(() => gameTypeRef.value === 'kamoulox')
 
