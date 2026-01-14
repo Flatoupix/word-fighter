@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.6
+
+- Add PNG favicon generated from `public/image.png`.
+
 ## 0.4.5
 
 - Update AGENT.md to include `git add .` before commits.
