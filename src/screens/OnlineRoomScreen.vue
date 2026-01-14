@@ -186,12 +186,13 @@ const shareLink = computed(() => {
 const trimmedName = computed(() => playerName.value.trim())
 const canJoin = computed(() => Boolean(trimmedName.value) && !isBusy.value)
 
-const getPlayerId = () => {
-  const key = 'wf_player_id'
-  const existing = localStorage.getItem(key)
+const getPlayerId = (code = roomId.value) => {
+  const key = code ? `wf_player_id_${code}` : 'wf_player_id'
+  const storage = window.sessionStorage
+  const existing = storage.getItem(key)
   if (existing) return existing
   const id = crypto.randomUUID()
-  localStorage.setItem(key, id)
+  storage.setItem(key, id)
   return id
 }
 
@@ -288,7 +289,7 @@ const createRoom = async () => {
   errorMessage.value = ''
   if (!supabaseReady) return
   const code = generateRoomCode()
-  const hostId = getPlayerId()
+  const hostId = getPlayerId(code)
   const settings = {
     gameType: props.gameType || 'word-fight',
     tag: props.grammarTag || '',

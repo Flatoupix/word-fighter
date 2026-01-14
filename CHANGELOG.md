@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3
+
+- Fix online lobby slots by keeping unique player ids per room/session.
+
 ## 0.4.2
 
 - Require a player name before joining an online room.
