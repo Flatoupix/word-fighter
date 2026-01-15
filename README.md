@@ -4,7 +4,7 @@
 
 #### The game is about entering a series of words and scoring as many points as possible.
 
-Current version: 0.5.0
+Current version: 0.5.1
 
 ## Current Game
 
@@ -78,9 +78,31 @@ Current version: 0.5.0
 
 ---
 
-## Dev (Vite + Tailwind)
+## Menu Flow (UX)
+
+```
+Entry
+|-- Rejoindre une partie
+|   `-- Online lobby (join)
+|       `-- Start -> Game
+`-- Creer une partie
+    |-- Creer en ligne
+    |   `-- Choisir type de jeu
+    |       `-- (Grammar War -> choisir tag)
+    |       `-- Online lobby (create)
+    |           `-- Start -> Game
+    `-- Creer en local
+        `-- Choisir type de jeu
+            `-- (Grammar War -> choisir tag)
+            `-- Choisir mode (solo/pvc/pvp)
+                `-- (PVP -> noms des joueurs)
+                `-- Choisir temps
+                    `-- Start -> Game
+```
 
 ---
+
+## Dev (Vite + Tailwind)
 
 - `yarn install`
 - `yarn dev`

@@ -21,7 +21,13 @@
       />
 
       <OnlineRoomScreen
-        v-else-if="(selectedMode === 'online' || hasRoomParam) && !isStarted"
+        v-else-if="
+          (selectedMode === 'online' || hasRoomParam) &&
+          !isStarted &&
+          (onlineEntryMode === 'join' ||
+            hasRoomParam ||
+            (gameType && (gameType !== 'grammar-war' || grammarTag)))
+        "
         :gameType="gameType"
         :grammarTag="grammarTag"
         :entryMode="onlineEntryMode"
@@ -36,7 +42,10 @@
 
       <CreateModeScreen v-else-if="entryStep === 'create'" @select="selectCreateMode" @back="goBack" />
 
-      <GameTypeSelectScreen v-else-if="entryStep === 'local' && !gameType" @select="selectGameType" />
+      <GameTypeSelectScreen
+        v-else-if="(entryStep === 'local' || entryStep === 'online') && !gameType"
+        @select="selectGameType"
+      />
 
       <GrammarTagSelectScreen
         v-else-if="gameType === 'grammar-war' && !grammarTag"
@@ -295,6 +304,7 @@ const selectEntry = (choice) => {
 const selectCreateMode = (choice) => {
   if (choice === 'online') {
     onlineEntryMode.value = 'create'
+    entryStep.value = 'online'
     selectedMode.value = 'online'
     return
   }
@@ -377,9 +387,7 @@ const goBack = () => {
   }
   if (selectedMode.value === 'online') {
     selectedMode.value = ''
-    if (onlineEntryMode.value !== 'create') {
-      entryStep.value = ''
-    }
+    entryStep.value = onlineEntryMode.value === 'create' ? 'online' : ''
     onlineEntryMode.value = 'join'
     gameType.value = ''
     grammarTag.value = ''
@@ -419,7 +427,7 @@ const goBack = () => {
     gameType.value = ''
     return
   }
-  if (entryStep.value === 'local') {
+  if (entryStep.value === 'local' || entryStep.value === 'online') {
     entryStep.value = 'create'
     return
   }

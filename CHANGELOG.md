@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1
+
+- Add create-online game type selection before the online lobby.
+- Document the menu flow tree in README.
+
 ## 0.5.0
 
 - Split entry flow into "Join" and "Create", with create branching to online or local.
