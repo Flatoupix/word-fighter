@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.5.8
+
+- Use a more readable font for the rules/changelog overlay text.
+
+## 0.5.7
+
+- Make header buttons more readable and reject already-used words as fails.
+
+## 0.5.6
+
+- Make the in-app rules overlay more concise (base flow + bonuses).
+
+## 0.5.5
+
+- Expand the in-app rules overlay with full French gameplay description.
+
+## 0.5.4
+
+- Ensure changelog and rules overlays scroll within the modal.
+
+## 0.5.3
+
+- Add overlay modals for changelog and detailed rules content.
+
+## 0.5.2
+
+- Add header buttons linking to the changelog and detailed rules.
+
 ## 0.5.1
 
 - Add create-online game type selection before the online lobby.

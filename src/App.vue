@@ -6,6 +6,24 @@
           Word Fighter
         </h1>
         <p class="mt-2 text-xs text-neon-yellow/80 sm:text-sm">Tape un mot pour marquer des points.</p>
+        <div
+          class="mt-3 flex flex-wrap items-center justify-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60"
+        >
+          <button
+            type="button"
+            class="inline-flex items-center rounded-full border border-neon-pink/60 px-3 py-1 font-ui text-xs normal-case tracking-normal text-neon-yellow/70 transition hover:border-neon-purple/80 hover:text-neon-yellow sm:text-sm"
+            @click="openOverlay('changelog')"
+          >
+            Changelog
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center rounded-full border border-neon-pink/60 px-3 py-1 font-ui text-xs normal-case tracking-normal text-neon-yellow/70 transition hover:border-neon-purple/80 hover:text-neon-yellow sm:text-sm"
+            @click="openOverlay('rules')"
+          >
+            Regles precises
+          </button>
+        </div>
       </header>
 
       <ResultScreen
@@ -132,6 +150,56 @@
       </template>
     </div>
   </div>
+  <div
+    v-if="overlayVisible"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3 py-6 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    @click.self="closeOverlay"
+  >
+    <div
+      class="flex w-full max-w-2xl flex-col rounded-md border border-neon-pink/70 bg-black/70 p-4 text-left text-neon-yellow sm:max-h-[80vh]"
+    >
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="font-display text-lg tracking-wide text-neon-purple sm:text-2xl">
+          {{ overlayTitle }}
+        </h2>
+        <button
+          type="button"
+          class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
+          @click="closeOverlay"
+        >
+          Fermer
+        </button>
+      </div>
+      <div
+        class="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-2 font-ui text-sm text-neon-yellow/80 sm:text-[15px]"
+      >
+        <template v-if="overlayType === 'changelog'">
+          <div v-for="entry in changelogEntries" :key="entry.version" class="space-y-2">
+            <div class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">Version {{ entry.version }}</div>
+            <ul class="space-y-1 text-xs text-neon-yellow/70 sm:text-sm">
+              <li v-for="item in entry.items" :key="item">- {{ item }}</li>
+            </ul>
+          </div>
+        </template>
+        <template v-else>
+          <section class="space-y-2">
+            <h3 class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">Deroulement</h3>
+            <ul class="space-y-1 text-xs text-neon-yellow/70 sm:text-sm">
+              <li v-for="item in rulesFlow" :key="item">- {{ item }}</li>
+            </ul>
+          </section>
+          <section class="space-y-2">
+            <h3 class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">Bonus</h3>
+            <ul class="space-y-1 text-xs text-neon-yellow/70 sm:text-sm">
+              <li v-for="item in rulesScoring" :key="item">- {{ item }}</li>
+            </ul>
+          </section>
+        </template>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -218,6 +286,44 @@ const showResults = ref(false)
 const resultPlayerScore = ref(0)
 const resultComputerScore = ref(0)
 const resultWinnerLabel = ref('')
+const overlayVisible = ref(false)
+const overlayType = ref('rules')
+const changelogEntries = [
+  {
+    version: '0.5.2',
+    items: ['Add header buttons linking to the changelog and detailed rules.'],
+  },
+  {
+    version: '0.5.1',
+    items: ['Add create-online game type selection before the online lobby.', 'Document the menu flow tree in README.'],
+  },
+  {
+    version: '0.5.0',
+    items: ['Split entry flow into "Join" and "Create", with create branching to online or local.'],
+  },
+]
+const rulesFlow = [
+  'Le chrono demarre au clic sur Start et la manche dure jusqu a zero.',
+  'Chaque tour consiste a proposer un mot valide.',
+  'Un mot valide est ajoute a la liste et rapporte des points.',
+  'Un mot invalide affiche FAIL et retire 1 seconde.',
+  'La manche se termine a la fin du temps et affiche le resultat.',
+]
+const rulesScoring = [
+  'Base: points des lettres selon src/assets/scrabble.json.',
+  'Palindrome: bonus si le mot se lit pareil a l envers (+10).',
+  'Super Suite: bonus si la premiere lettre est adjacente a celle du mot precedent.',
+  'Super Shrink: bonus si la longueur differe de +/-1 par rapport au mot precedent.',
+  'Initial Gap: bonus selon la distance alphabetique entre premieres lettres.',
+]
+const overlayTitle = computed(() => (overlayType.value === 'changelog' ? 'Changelog' : 'Regles precises'))
+const openOverlay = (type) => {
+  overlayType.value = type
+  overlayVisible.value = true
+}
+const closeOverlay = () => {
+  overlayVisible.value = false
+}
 const resultWinnerScore = ref(0)
 let timerId = null
 let onlineRoomChannel = null

@@ -387,6 +387,10 @@ export const useGameState = ({
       wordFail()
       return
     }
+    if (wordList.value.includes(entry.normalized)) {
+      wordFail()
+      return
+    }
     if (isGrammarWar.value) {
       if (!grammarTagRef.value) {
         wordFail()
