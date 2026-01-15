@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+
+- Split entry flow into "Join" and "Create", with create branching to online or local.
+
 ## 0.4.9
 
 - Sync online words and scores via Supabase room state.

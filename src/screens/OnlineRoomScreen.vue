@@ -9,7 +9,7 @@
     </button>
 
     <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">
-      Online Lobby
+      {{ titleLabel }}
     </h2>
 
     <p v-if="!supabaseReady" class="mt-3 text-center text-xs text-neon-yellow/70">
@@ -19,13 +19,14 @@
     <template v-else>
       <div v-if="step === 'landing'" class="mt-4 space-y-4">
         <button
+          v-if="showCreate"
           type="button"
           class="w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-3 text-center transition hover:border-neon-purple/80 hover:bg-black/40"
           @click="createRoom"
         >
           <span class="font-display text-xl text-neon-yellow">Create room</span>
         </button>
-        <div class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
+        <div v-if="showJoin" class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
           <label class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Join with code</label>
           <div class="mt-2 flex items-center gap-2">
             <input
@@ -143,6 +144,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  entryMode: {
+    type: String,
+    default: 'full',
+  },
 })
 
 const emit = defineEmits(['start', 'syncSettings', 'syncPlayers', 'syncRoom', 'back'])
@@ -178,6 +183,14 @@ const settingsLabel = computed(() => {
   if (roomSettings.value.gameType === 'kamoulox') return 'Kamoulox'
   return 'Word Fight'
 })
+
+const titleLabel = computed(() => {
+  if (props.entryMode === 'join') return 'Rejoindre une partie'
+  if (props.entryMode === 'create') return 'Creer une partie'
+  return 'Online Lobby'
+})
+const showCreate = computed(() => props.entryMode !== 'join')
+const showJoin = computed(() => props.entryMode !== 'create')
 
 const shareLink = computed(() => {
   if (!roomId.value) return ''
@@ -314,6 +327,7 @@ const createRoom = async () => {
   }
   roomId.value = code
   isHost.value = true
+  emit('syncRoom', { roomId: code, playerId: hostId })
   setRoomParam(code)
   step.value = 'name'
   await fetchRoom()

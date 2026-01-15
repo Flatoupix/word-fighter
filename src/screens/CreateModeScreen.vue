@@ -1,19 +1,26 @@
 <template>
   <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm sm:p-4 md:max-w-[30rem]">
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
+      @click="$emit('back')"
+    >
+      ← Back
+    </button>
     <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">
-      Bienvenue
+      Creer une partie
     </h2>
     <div class="mt-4 grid gap-4">
       <ModeCard
-        mode="join"
-        title="Rejoindre une partie"
-        description="Acces direct avec un code ou un lien."
+        mode="online"
+        title="Creer en ligne"
+        description="Invite des joueurs avec un lien."
         @select="$emit('select', $event)"
       />
       <ModeCard
-        mode="create"
-        title="Creer une partie"
-        description="Choisis ensuite online ou local."
+        mode="local"
+        title="Creer en local"
+        description="Continue en solo ou versus."
         @select="$emit('select', $event)"
       />
     </div>
@@ -23,5 +30,5 @@
 <script setup>
 import ModeCard from '../components/modes/ModeCard.vue'
 
-defineEmits(['select'])
+defineEmits(['select', 'back'])
 </script>

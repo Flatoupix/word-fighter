@@ -4,7 +4,7 @@
 
 #### The game is about entering a series of words and scoring as many points as possible.
 
-Current version: 0.4.9
+Current version: 0.5.0
 
 ## Current Game
 

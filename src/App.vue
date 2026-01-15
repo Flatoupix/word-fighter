@@ -24,6 +24,7 @@
         v-else-if="(selectedMode === 'online' || hasRoomParam) && !isStarted"
         :gameType="gameType"
         :grammarTag="grammarTag"
+        :entryMode="onlineEntryMode"
         @start="startOnlineSession"
         @syncSettings="syncOnlineSettings"
         @syncPlayers="syncOnlinePlayers"
@@ -31,9 +32,11 @@
         @back="goBack"
       />
 
-      <EntryScreen v-else-if="!entryChoice" @select="selectEntry" />
+      <EntryScreen v-else-if="!entryStep" @select="selectEntry" />
 
-      <GameTypeSelectScreen v-else-if="entryChoice === 'local' && !gameType" @select="selectGameType" />
+      <CreateModeScreen v-else-if="entryStep === 'create'" @select="selectCreateMode" @back="goBack" />
+
+      <GameTypeSelectScreen v-else-if="entryStep === 'local' && !gameType" @select="selectGameType" />
 
       <GrammarTagSelectScreen
         v-else-if="gameType === 'grammar-war' && !grammarTag"
@@ -41,7 +44,7 @@
         @back="goBack"
       />
 
-      <ModeSelectScreen v-else-if="!selectedMode" @select="selectMode" @back="goBack" />
+      <ModeSelectScreen v-else-if="entryStep === 'local' && !selectedMode" @select="selectMode" @back="goBack" />
 
       <PlayerNamesScreen
         v-else-if="selectedMode === 'pvp' && !namesConfirmed"
@@ -127,6 +130,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import MainBoard from './components/game/MainBoard.vue'
 import ScoreBoard from './components/game/ScoreBoard.vue'
 import EntryScreen from './screens/EntryScreen.vue'
+import CreateModeScreen from './screens/CreateModeScreen.vue'
 import GameTypeSelectScreen from './screens/GameTypeSelectScreen.vue'
 import GrammarTagSelectScreen from './screens/GrammarTagSelectScreen.vue'
 import ModeSelectScreen from './screens/ModeSelectScreen.vue'
@@ -140,8 +144,9 @@ import { supabase } from './lib/supabaseClient'
 const gameType = ref('')
 const grammarTag = ref('')
 const selectedMode = ref('')
-const entryChoice = ref('')
+const entryStep = ref('')
 const hasRoomParam = ref(false)
+const onlineEntryMode = ref('join')
 const onlinePlayers = ref([])
 const onlineRoomId = ref('')
 const onlinePlayerId = ref('')
@@ -279,11 +284,21 @@ const applyOnlineSettings = ({ gameType: type, tag, duration, turnIndex, state }
 }
 
 const selectEntry = (choice) => {
-  if (choice === 'online') {
+  if (choice === 'join') {
+    onlineEntryMode.value = 'join'
     selectedMode.value = 'online'
     return
   }
-  entryChoice.value = 'local'
+  entryStep.value = 'create'
+}
+
+const selectCreateMode = (choice) => {
+  if (choice === 'online') {
+    onlineEntryMode.value = 'create'
+    selectedMode.value = 'online'
+    return
+  }
+  entryStep.value = 'local'
 }
 
 const selectGrammarTag = (tag) => {
@@ -321,7 +336,8 @@ const resetMode = () => {
   gameType.value = ''
   grammarTag.value = ''
   selectedMode.value = ''
-  entryChoice.value = ''
+  entryStep.value = ''
+  onlineEntryMode.value = 'join'
   onlinePlayers.value = []
   onlineRoomId.value = ''
   onlinePlayerId.value = ''
@@ -361,7 +377,10 @@ const goBack = () => {
   }
   if (selectedMode.value === 'online') {
     selectedMode.value = ''
-    entryChoice.value = ''
+    if (onlineEntryMode.value !== 'create') {
+      entryStep.value = ''
+    }
+    onlineEntryMode.value = 'join'
     gameType.value = ''
     grammarTag.value = ''
     onlinePlayers.value = []
@@ -400,8 +419,12 @@ const goBack = () => {
     gameType.value = ''
     return
   }
-  if (entryChoice.value) {
-    entryChoice.value = ''
+  if (entryStep.value === 'local') {
+    entryStep.value = 'create'
+    return
+  }
+  if (entryStep.value) {
+    entryStep.value = ''
     return
   }
 }
@@ -513,6 +536,7 @@ const initRoomParam = () => {
   if (roomParam) {
     hasRoomParam.value = true
     selectedMode.value = 'online'
+    onlineEntryMode.value = 'join'
   }
 }
 
@@ -597,6 +621,7 @@ const syncOnlineWordIfNeeded = async () => {
   if (!isLocalOnlineTurn.value) return
   if (!onlinePlayers.value.length) return
   if (isTyping.value) return
+  if (!onlinePlayerId.value) return
   const currentLength = wordListDisp.value.length
   if (currentLength <= lastSyncedWordIndex.value) return
 
