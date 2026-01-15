@@ -12,6 +12,7 @@ export const useGameState = ({
   modeRef = ref('pvc'),
   gameTypeRef = ref('word-fight'),
   grammarTagRef = ref(''),
+  turnActiveRef = ref(true),
   onFailPenalty = () => {},
 } = {}) => {
   const wordInput = ref('')
@@ -52,21 +53,24 @@ export const useGameState = ({
 
   const isSoloMode = computed(() => modeRef.value === 'solo')
   const isVsComputer = computed(() => modeRef.value === 'pvc')
+  const isOnlineMode = computed(() => modeRef.value === 'online')
   const isGrammarWar = computed(() => gameTypeRef.value === 'grammar-war')
   const isKamoulox = computed(() => gameTypeRef.value === 'kamoulox')
 
   const wordFail = () => {
     playAtDuring(failUrl)
     onFailPenalty()
-    const owner = isSoloMode.value
+    const owner = isOnlineMode.value
       ? 'player'
-      : isVsComputer.value
-        ? computerTurn.value
-          ? 'computer'
-          : 'player'
-        : computerTurn.value
-          ? 'player2'
-          : 'player1'
+      : isSoloMode.value
+        ? 'player'
+        : isVsComputer.value
+          ? computerTurn.value
+            ? 'computer'
+            : 'player'
+          : computerTurn.value
+            ? 'player2'
+            : 'player1'
     wordListDisp.value.push({
       index: wordListDisp.value.length,
       text: 'FAIL',
@@ -96,7 +100,9 @@ export const useGameState = ({
       pointsAdded.value = []
       isTyping.value = false
       if (gameActive.value) {
-        if (isSoloMode.value) {
+        if (isOnlineMode.value) {
+          computerTurn.value = false
+        } else if (isSoloMode.value) {
           computerTurn.value = false
         } else if (computerTurn.value) {
           computerTurn.value = false
@@ -346,7 +352,10 @@ export const useGameState = ({
       isTyping.value = false
       index.value = 0
 
-      if (computerTurn.value === true) {
+      if (isOnlineMode.value) {
+        playerPoints.value += calcPoints.value
+        computerTurn.value = false
+      } else if (computerTurn.value === true) {
         computerTurn.value = false
         comPoints.value += calcPoints.value
       } else {
@@ -389,15 +398,17 @@ export const useGameState = ({
       }
     }
 
-    const owner = isSoloMode.value
+    const owner = isOnlineMode.value
       ? 'player'
-      : isVsComputer.value
-        ? computerTurn.value
-          ? 'computer'
-          : 'player'
-        : computerTurn.value
-          ? 'player2'
-          : 'player1'
+      : isSoloMode.value
+        ? 'player'
+        : isVsComputer.value
+          ? computerTurn.value
+            ? 'computer'
+            : 'player'
+          : computerTurn.value
+            ? 'player2'
+            : 'player1'
     if (isVsComputer.value && owner === 'computer') {
       speedBonusAwarded.value = 0
     }
@@ -449,6 +460,9 @@ export const useGameState = ({
     if (!gameActive.value || isTyping.value || ((isVsComputer.value || isSoloMode.value) && computerTurn.value)) {
       return
     }
+    if (isOnlineMode.value && !turnActiveRef.value) {
+      return
+    }
     if (!word || word.trim().length === 0) {
       return
     }
@@ -462,6 +476,18 @@ export const useGameState = ({
     if (word) {
       word.visible = !word.visible
     }
+  }
+
+  const setOnlineSnapshot = ({ words = [], normalized = [], playerScore = 0, opponentScore = 0 }) => {
+    wordList.value = normalized
+    wordListDisp.value = words
+    playerPoints.value = playerScore
+    comPoints.value = opponentScore
+    wordPlayed.value = ''
+    calcPoints.value = 0
+    pointsAdded.value = []
+    wrongWord.value = false
+    isTyping.value = false
   }
 
   onMounted(() => {
@@ -487,9 +513,31 @@ export const useGameState = ({
   }
 
   watch(
-    () => [computerTurn.value, gameActive.value, isTyping.value, isVsComputer.value, isSoloMode.value],
-    ([isComputerTurn, isActive, typing, vsComputer, soloMode]) => {
-      if (isActive && !typing && ((!vsComputer && !soloMode) || !isComputerTurn)) {
+    () => [
+      computerTurn.value,
+      gameActive.value,
+      isTyping.value,
+      isVsComputer.value,
+      isSoloMode.value,
+      isOnlineMode.value,
+      turnActiveRef.value,
+    ],
+    ([isComputerTurn, isActive, typing, vsComputer, soloMode, onlineMode, turnActive]) => {
+      if (!isActive || typing) {
+        stopSpeedTimer()
+        return
+      }
+      if (onlineMode) {
+        if (turnActive) {
+          if (!speedTimerId) {
+            startSpeedTimer()
+          }
+          return
+        }
+        stopSpeedTimer()
+        return
+      }
+      if ((!vsComputer && !soloMode) || !isComputerTurn) {
         if (!speedTimerId) {
           startSpeedTimer()
         }
@@ -581,5 +629,6 @@ export const useGameState = ({
     startSoloSeed,
     addWord,
     toggleWordVisibility,
+    setOnlineSnapshot,
   }
 }

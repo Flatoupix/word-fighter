@@ -145,11 +145,11 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['start', 'syncSettings', 'back'])
+const emit = defineEmits(['start', 'syncSettings', 'syncPlayers', 'syncRoom', 'back'])
 
 const supabaseReady = Boolean(supabase)
 const roomId = ref('')
-const roomSettings = ref({ gameType: '', tag: '', duration: 1 })
+const roomSettings = ref({ gameType: '', tag: '', duration: 1, turnIndex: 0, state: null })
 const players = ref([])
 const nameStorageKey = 'wf_player_name'
 const loadPlayerName = () => {
@@ -214,6 +214,8 @@ const fetchRoom = async () => {
     gameType: data.settings?.gameType || 'word-fight',
     tag: data.settings?.tag || '',
     duration: data.settings?.duration || 1,
+    turnIndex: data.settings?.turnIndex ?? 0,
+    state: data.settings?.state || null,
   }
   isHost.value = data.host_id === getPlayerId()
   duration.value = roomSettings.value.duration
@@ -231,6 +233,7 @@ const fetchPlayers = async () => {
     .eq('room_id', roomId.value)
     .order('joined_at', { ascending: true })
   players.value = data || []
+  emit('syncPlayers', players.value)
 }
 
 const subscribeRoom = () => {
@@ -246,6 +249,8 @@ const subscribeRoom = () => {
           gameType: data.settings?.gameType || 'word-fight',
           tag: data.settings?.tag || '',
           duration: data.settings?.duration || 1,
+          turnIndex: data.settings?.turnIndex ?? 0,
+          state: data.settings?.state || null,
         }
         duration.value = roomSettings.value.duration
         emit('syncSettings', roomSettings.value)
@@ -294,6 +299,8 @@ const createRoom = async () => {
     gameType: props.gameType || 'word-fight',
     tag: props.grammarTag || '',
     duration: duration.value,
+    turnIndex: 0,
+    state: { words: [], normalized: [], scores: {} },
   }
   const { error } = await supabase.from('rooms').insert({
     id: code,
@@ -335,7 +342,7 @@ const joinRoom = async () => {
     isBusy.value = false
     return
   }
-  const playerId = getPlayerId()
+  const playerId = getPlayerId(roomId.value)
   const name = trimmedName.value
   savePlayerName(name)
   const { error } = await supabase.from('players').upsert(
@@ -352,6 +359,7 @@ const joinRoom = async () => {
     isBusy.value = false
     return
   }
+  emit('syncRoom', { roomId: roomId.value, playerId })
   step.value = 'lobby'
   await fetchPlayers()
   subscribeRoom()
@@ -366,6 +374,8 @@ const startRoom = async () => {
     gameType: roomSettings.value.gameType,
     tag: roomSettings.value.tag,
     duration: duration.value,
+    turnIndex: roomSettings.value.turnIndex ?? 0,
+    state: roomSettings.value.state || { words: [], normalized: [], scores: {} },
   }
   await supabase
     .from('rooms')

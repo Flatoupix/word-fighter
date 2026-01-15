@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.9
+
+- Sync online words and scores via Supabase room state.
+- Highlight active online player with per-player scores in list.
+
+## 0.4.8
+
+- Add online player list panel with active turn highlight and ordering.
+- Sync online turn index via Supabase room settings.
+
+## 0.4.7
+
+- Add a first-step entry screen to join a room immediately.
+- Remove online mode from later mode selection screens.
+
 ## 0.4.6
 
 - Add PNG favicon generated from `public/image.png`.

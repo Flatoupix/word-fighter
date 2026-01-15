@@ -26,10 +26,14 @@
         :grammarTag="grammarTag"
         @start="startOnlineSession"
         @syncSettings="syncOnlineSettings"
+        @syncPlayers="syncOnlinePlayers"
+        @syncRoom="syncOnlineRoom"
         @back="goBack"
       />
 
-      <GameTypeSelectScreen v-else-if="!gameType" @select="selectGameType" />
+      <EntryScreen v-else-if="!entryChoice" @select="selectEntry" />
+
+      <GameTypeSelectScreen v-else-if="entryChoice === 'local' && !gameType" @select="selectGameType" />
 
       <GrammarTagSelectScreen
         v-else-if="gameType === 'grammar-war' && !grammarTag"
@@ -92,7 +96,17 @@
             :speedBonus="isStarted ? speedBonus : 0"
             :playerLabel="playerOneLabel"
             :opponentLabel="playerTwoLabel"
-            :disabled="isTyping || !isStarted || ((selectedMode !== 'pvp' && selectedMode !== 'solo') && computerTurn)"
+            :isOnline="selectedMode === 'online'"
+            :onlinePlayers="onlinePlayers"
+            :activePlayerId="activeOnlinePlayerId"
+            :onlineScores="onlineScores"
+            :disabled="
+              isTyping ||
+              !isStarted ||
+              (selectedMode === 'online'
+                ? !isLocalOnlineTurn
+                : (selectedMode !== 'pvp' && selectedMode !== 'solo') && computerTurn)
+            "
             @submit="onSubmit"
           />
           <div class="text-center text-xs text-neon-yellow/60">
@@ -112,6 +126,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import MainBoard from './components/game/MainBoard.vue'
 import ScoreBoard from './components/game/ScoreBoard.vue'
+import EntryScreen from './screens/EntryScreen.vue'
 import GameTypeSelectScreen from './screens/GameTypeSelectScreen.vue'
 import GrammarTagSelectScreen from './screens/GrammarTagSelectScreen.vue'
 import ModeSelectScreen from './screens/ModeSelectScreen.vue'
@@ -120,14 +135,31 @@ import PlayerNamesScreen from './screens/PlayerNamesScreen.vue'
 import ResultScreen from './screens/ResultScreen.vue'
 import TimeSelectScreen from './screens/TimeSelectScreen.vue'
 import { useGameState } from './composables/useGameState'
+import { supabase } from './lib/supabaseClient'
 
 const gameType = ref('')
 const grammarTag = ref('')
 const selectedMode = ref('')
+const entryChoice = ref('')
 const hasRoomParam = ref(false)
+const onlinePlayers = ref([])
+const onlineRoomId = ref('')
+const onlinePlayerId = ref('')
+const onlineTurnIndex = ref(0)
+const onlineRoomSettings = ref({ gameType: '', tag: '', duration: 1, turnIndex: 0, state: null })
+const onlineRoomState = ref({ words: [], normalized: [], scores: {} })
+const isApplyingRemote = ref(false)
+const lastSyncedWordIndex = ref(0)
 const playerOneName = ref('Player 1')
 const playerTwoName = ref('Player 2')
 const namesConfirmed = ref(false)
+const activeOnlinePlayerId = computed(() => onlinePlayers.value[onlineTurnIndex.value]?.player_id || '')
+const isLocalOnlineTurn = computed(() => {
+  if (selectedMode.value !== 'online') return true
+  if (!onlinePlayers.value.length) return true
+  if (!onlinePlayerId.value) return true
+  return activeOnlinePlayerId.value === onlinePlayerId.value
+})
 
 const {
   wordInput,
@@ -153,10 +185,12 @@ const {
   startSoloSeed,
   addWord,
   toggleWordVisibility,
+  setOnlineSnapshot,
 } = useGameState({
   modeRef: selectedMode,
   gameTypeRef: gameType,
   grammarTagRef: grammarTag,
+  turnActiveRef: isLocalOnlineTurn,
   onFailPenalty: () => {
     if (timeLeft.value > 0) {
       timeLeft.value -= 1
@@ -172,6 +206,8 @@ const resultComputerScore = ref(0)
 const resultWinnerLabel = ref('')
 const resultWinnerScore = ref(0)
 let timerId = null
+let onlineRoomChannel = null
+let onlinePlayersChannel = null
 const modeLabel = computed(() => {
   if (selectedMode.value === 'solo') return 'Solo'
   if (selectedMode.value === 'pvc') return 'Player VS Computer'
@@ -182,6 +218,7 @@ const modeLabel = computed(() => {
 const playerOneLabel = computed(() => (selectedMode.value === 'pvp' ? playerOneName.value : 'Player'))
 const playerTwoLabel = computed(() => (selectedMode.value === 'pvp' ? playerTwoName.value : 'Computer'))
 const durationLabel = computed(() => (selectedDuration.value ? `${selectedDuration.value} min` : ''))
+const onlineScores = computed(() => onlineRoomState.value.scores || {})
 const grammarTagLabel = computed(() => {
   if (grammarTag.value === 'VER') return 'Verbes'
   if (grammarTag.value === 'ADJ') return 'Adjectifs'
@@ -213,6 +250,42 @@ const selectGameType = (type) => {
   grammarTag.value = ''
 }
 
+const applyOnlineSettings = ({ gameType: type, tag, duration, turnIndex, state }) => {
+  if (type) {
+    gameType.value = type
+    onlineRoomSettings.value.gameType = type
+  }
+  if (tag !== undefined) {
+    grammarTag.value = tag
+    onlineRoomSettings.value.tag = tag
+  }
+  if (duration) {
+    selectedDuration.value = duration
+    onlineRoomSettings.value.duration = duration
+  }
+  if (typeof turnIndex === 'number') {
+    onlineTurnIndex.value = turnIndex
+    onlineRoomSettings.value.turnIndex = turnIndex
+  }
+  if (state) {
+    onlineRoomSettings.value.state = state
+    onlineRoomState.value = {
+      words: state.words || [],
+      normalized: state.normalized || [],
+      scores: state.scores || {},
+    }
+    applyOnlineSnapshot()
+  }
+}
+
+const selectEntry = (choice) => {
+  if (choice === 'online') {
+    selectedMode.value = 'online'
+    return
+  }
+  entryChoice.value = 'local'
+}
+
 const selectGrammarTag = (tag) => {
   grammarTag.value = tag
 }
@@ -226,16 +299,17 @@ const selectMode = (mode) => {
   }
 }
 
-const syncOnlineSettings = ({ gameType: type, tag, duration }) => {
-  if (type) {
-    gameType.value = type
-  }
-  if (tag !== undefined) {
-    grammarTag.value = tag
-  }
-  if (duration) {
-    selectedDuration.value = duration
-  }
+const syncOnlineSettings = ({ gameType: type, tag, duration, turnIndex, state }) => {
+  applyOnlineSettings({ gameType: type, tag, duration, turnIndex, state })
+}
+
+const syncOnlinePlayers = (players) => {
+  onlinePlayers.value = players || []
+}
+
+const syncOnlineRoom = ({ roomId, playerId }) => {
+  onlineRoomId.value = roomId || ''
+  onlinePlayerId.value = playerId || ''
 }
 
 const selectDuration = (minutes) => {
@@ -247,6 +321,14 @@ const resetMode = () => {
   gameType.value = ''
   grammarTag.value = ''
   selectedMode.value = ''
+  entryChoice.value = ''
+  onlinePlayers.value = []
+  onlineRoomId.value = ''
+  onlinePlayerId.value = ''
+  onlineTurnIndex.value = 0
+  onlineRoomSettings.value = { gameType: '', tag: '', duration: 1, turnIndex: 0, state: null }
+  onlineRoomState.value = { words: [], normalized: [], scores: {} }
+  lastSyncedWordIndex.value = 0
   clearRoomParam()
   selectedDuration.value = 0
   timeLeft.value = 0
@@ -260,6 +342,7 @@ const resetMode = () => {
   resultWinnerLabel.value = ''
   resultWinnerScore.value = 0
   stopTimer()
+  cleanupOnlineChannels()
 }
 
 const confirmNames = ({ playerOne, playerTwo }) => {
@@ -278,10 +361,21 @@ const goBack = () => {
   }
   if (selectedMode.value === 'online') {
     selectedMode.value = ''
+    entryChoice.value = ''
+    gameType.value = ''
+    grammarTag.value = ''
+    onlinePlayers.value = []
+    onlineRoomId.value = ''
+    onlinePlayerId.value = ''
+    onlineTurnIndex.value = 0
+    onlineRoomSettings.value = { gameType: '', tag: '', duration: 1, turnIndex: 0, state: null }
+    onlineRoomState.value = { words: [], normalized: [], scores: {} }
+    lastSyncedWordIndex.value = 0
     clearRoomParam()
     selectedDuration.value = 0
     timeLeft.value = 0
     stopTimer()
+    cleanupOnlineChannels()
     return
   }
   if (selectedDuration.value) {
@@ -304,6 +398,10 @@ const goBack = () => {
   }
   if (gameType.value) {
     gameType.value = ''
+    return
+  }
+  if (entryChoice.value) {
+    entryChoice.value = ''
     return
   }
 }
@@ -368,6 +466,8 @@ const startOnlineSession = ({ duration }) => {
     return
   }
   selectedDuration.value = duration
+  onlineTurnIndex.value = onlineRoomSettings.value.turnIndex || 0
+  applyOnlineSnapshot()
   startTimer()
 }
 
@@ -379,16 +479,22 @@ const clearRoomParam = () => {
 }
 
 const onSubmit = () => {
+  if (selectedMode.value === 'online' && !isLocalOnlineTurn.value) {
+    return
+  }
   addWord(wordInput.value)
 }
 
 watch(
-  () => [computerTurn.value, isTyping.value, isStarted.value, selectedMode.value],
-  async ([isComputer, typing, started, mode]) => {
+  () => [computerTurn.value, isTyping.value, isStarted.value, selectedMode.value, isLocalOnlineTurn.value],
+  async ([isComputer, typing, started, mode, localTurn]) => {
     if (!started || typing) {
       return
     }
-    if (mode !== 'pvp' && isComputer) {
+    if (mode === 'online' && !localTurn) {
+      return
+    }
+    if (mode !== 'pvp' && mode !== 'online' && isComputer) {
       return
     }
     await nextTick()
@@ -398,6 +504,7 @@ watch(
 
 onBeforeUnmount(() => {
   stopTimer()
+  cleanupOnlineChannels()
 })
 
 const initRoomParam = () => {
@@ -410,4 +517,155 @@ const initRoomParam = () => {
 }
 
 initRoomParam()
+
+const cleanupOnlineChannels = () => {
+  if (!supabase) return
+  if (onlineRoomChannel) {
+    supabase.removeChannel(onlineRoomChannel)
+    onlineRoomChannel = null
+  }
+  if (onlinePlayersChannel) {
+    supabase.removeChannel(onlinePlayersChannel)
+    onlinePlayersChannel = null
+  }
+}
+
+const fetchOnlinePlayers = async () => {
+  if (!supabase || !onlineRoomId.value) return
+  const { data } = await supabase
+    .from('players')
+    .select('*')
+    .eq('room_id', onlineRoomId.value)
+    .order('joined_at', { ascending: true })
+  onlinePlayers.value = data || []
+}
+
+const fetchOnlineRoom = async () => {
+  if (!supabase || !onlineRoomId.value) return
+  const { data } = await supabase.from('rooms').select('*').eq('id', onlineRoomId.value).single()
+  if (!data) return
+  applyOnlineSettings({
+    gameType: data.settings?.gameType || 'word-fight',
+    tag: data.settings?.tag || '',
+    duration: data.settings?.duration || 1,
+    turnIndex: data.settings?.turnIndex ?? 0,
+    state: data.settings?.state || { words: [], normalized: [], scores: {} },
+  })
+}
+
+watch(
+  () => [onlineRoomId.value, selectedMode.value],
+  ([roomId, mode]) => {
+    cleanupOnlineChannels()
+    if (!supabase || !roomId || mode !== 'online') return
+    fetchOnlineRoom()
+    fetchOnlinePlayers()
+    onlineRoomChannel = supabase
+      .channel(`room-game-${roomId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+        (payload) => {
+          const data = payload.new
+          applyOnlineSettings({
+            gameType: data.settings?.gameType || 'word-fight',
+            tag: data.settings?.tag || '',
+            duration: data.settings?.duration || 1,
+            turnIndex: data.settings?.turnIndex ?? 0,
+            state: data.settings?.state || { words: [], normalized: [], scores: {} },
+          })
+        }
+      )
+      .subscribe()
+    onlinePlayersChannel = supabase
+      .channel(`players-game-${roomId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
+        () => {
+          fetchOnlinePlayers()
+        }
+      )
+      .subscribe()
+  }
+)
+
+const syncOnlineWordIfNeeded = async () => {
+  if (selectedMode.value !== 'online' || !isStarted.value) return
+  if (!supabase || !onlineRoomId.value) return
+  if (isApplyingRemote.value) return
+  if (!isLocalOnlineTurn.value) return
+  if (!onlinePlayers.value.length) return
+  if (isTyping.value) return
+  const currentLength = wordListDisp.value.length
+  if (currentLength <= lastSyncedWordIndex.value) return
+
+  const latestWord = wordListDisp.value[wordListDisp.value.length - 1]
+  const ownerId = onlinePlayerId.value
+  const newWord = {
+    text: latestWord.text,
+    normalized: latestWord.normalized,
+    description: latestWord.description,
+    tags: latestWord.tags || [],
+    ownerId,
+    visible: false,
+  }
+  const nextIndex = (onlineTurnIndex.value + 1) % onlinePlayers.value.length
+  const updatedScores = {
+    ...onlineRoomState.value.scores,
+    [ownerId]: playerPoints.value,
+  }
+  const updatedState = {
+    words: [...onlineRoomState.value.words, newWord],
+    normalized: [...onlineRoomState.value.normalized, latestWord.normalized],
+    scores: updatedScores,
+  }
+  onlineTurnIndex.value = nextIndex
+  onlineRoomState.value = updatedState
+  onlineRoomSettings.value = { ...onlineRoomSettings.value, turnIndex: nextIndex, state: updatedState }
+  lastSyncedWordIndex.value = currentLength
+  await supabase.from('rooms').update({ settings: onlineRoomSettings.value }).eq('id', onlineRoomId.value)
+}
+
+watch(
+  () => wordListDisp.value.length,
+  async (next, prev) => {
+    if (next <= prev) return
+    await syncOnlineWordIfNeeded()
+  }
+)
+
+watch(
+  () => isTyping.value,
+  async (typing) => {
+    if (typing) return
+    await syncOnlineWordIfNeeded()
+  }
+)
+
+watch(
+  () => onlinePlayers.value.length,
+  (length) => {
+    if (!length) return
+    if (onlineTurnIndex.value >= length) {
+      onlineTurnIndex.value = 0
+    }
+  }
+)
+
+const applyOnlineSnapshot = () => {
+  isApplyingRemote.value = true
+  const words = onlineRoomState.value.words.map((word) => ({
+    ...word,
+    owner: word.ownerId && word.ownerId === onlinePlayerId.value ? 'player' : 'computer',
+  }))
+  setOnlineSnapshot({
+    words,
+    normalized: onlineRoomState.value.normalized,
+    playerScore: onlineRoomState.value.scores?.[onlinePlayerId.value] || 0,
+    opponentScore: 0,
+  })
+  lastSyncedWordIndex.value = words.length
+  isApplyingRemote.value = false
+}
 </script>

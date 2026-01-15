@@ -29,12 +29,6 @@
         description="Tour par tour en local, même clavier."
         @select="$emit('select', $event)"
       />
-      <ModeCard
-        mode="online"
-        title="Online Battle"
-        description="Prototype de lobby (Supabase)."
-        @select="$emit('select', $event)"
-      />
     </div>
   </section>
 </template>
