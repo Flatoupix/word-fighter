@@ -2,7 +2,7 @@
   <section class="grid h-auto items-start gap-3 md:h-[clamp(20rem,52vh,32rem)] md:gap-4 md:grid-cols-[1fr_3fr_1fr]">
     <div class="grid grid-cols-2 items-start gap-3 md:contents">
       <div class="order-1 self-start md:order-1">
-        <WordListPanel :words="state.words" @toggle="$emit('toggle', $event)" />
+        <WordListPanel :words="state.words" :playerColors="state.playerColors" @toggle="$emit('toggle', $event)" />
       </div>
       <div class="order-2 self-start md:order-3">
         <BonusPanel

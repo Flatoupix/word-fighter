@@ -4,7 +4,7 @@
 
 #### The game is about entering a series of words and scoring as many points as possible.
 
-Current version: 0.5.14
+Current version: 0.5.15
 
 ## Current Game
 
@@ -35,6 +35,8 @@ Current version: 0.5.14
 
 - Letter points based on `src/assets/scrabble.json` (English distribution/values).
 - Palindrome bonus: +10 if the word equals its reverse.
+- Anagram bonus: +5 if the word uses the same letters as the previous word.
+- Double-letter bonus: +2 per consecutive double-letter occurrence.
 - Super Suite bonus: if the first letter is adjacent to the previous word's first letter.
 - Super Shrink bonus: if the length differs by ±1 from the previous word.
 - Initial gap bonus: alphabetical distance between first letters (current behavior).

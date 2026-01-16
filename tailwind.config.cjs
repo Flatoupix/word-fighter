@@ -10,6 +10,9 @@ module.exports = {
           orange: '#ff901f',
           yellow: '#ffd319',
           magenta: '#f222ff',
+          cyan: '#28f0ff',
+          blue: '#4aa8ff',
+          green: '#34f5a0',
         },
       },
       fontFamily: {

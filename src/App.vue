@@ -30,6 +30,7 @@
         v-if="showResults"
         :winnerLabel="resultWinnerLabel"
         :winnerScore="resultWinnerScore"
+        :winnerClass="resultWinnerClass"
         :playerScore="resultPlayerScore"
         :computerScore="resultComputerScore"
         :playerLabel="playerOneLabel"
@@ -138,6 +139,7 @@
             :onlinePlayers="onlinePlayers"
             :activePlayerId="activeOnlinePlayerId"
             :onlineScores="onlineScores"
+            :onlineColors="onlineColorMap"
             :disabled="
               isTyping ||
               !isStarted ||
@@ -247,6 +249,16 @@ const onlineRoomSettings = ref({ gameType: '', tag: '', duration: 1, turnIndex: 
 const onlineRoomState = ref({ words: [], normalized: [], scores: {} })
 const isApplyingRemote = ref(false)
 const lastSyncedWordIndex = ref(0)
+const playerColorPalette = [
+  'text-neon-yellow',
+  'text-neon-purple',
+  'text-neon-pink',
+  'text-neon-orange',
+  'text-neon-magenta',
+  'text-neon-cyan',
+  'text-neon-blue',
+  'text-neon-green',
+]
 const playerOneName = ref(uiText.players.defaultOne)
 const playerTwoName = ref(uiText.players.defaultTwo)
 const namesConfirmed = ref(false)
@@ -259,6 +271,13 @@ const isLocalOnlineTurn = computed(() => {
   if (!onlinePlayers.value.length) return true
   if (!onlinePlayerId.value) return true
   return activeOnlinePlayerId.value === onlinePlayerId.value
+})
+const onlineColorMap = computed(() => {
+  const map = {}
+  onlinePlayers.value.forEach((player, index) => {
+    map[player.player_id] = playerColorPalette[index % playerColorPalette.length]
+  })
+  return map
 })
 
 const {
@@ -291,6 +310,7 @@ const {
   modeRef: selectedMode,
   gameTypeRef: gameType,
   grammarTagRef: grammarTag,
+  onlinePlayerIdRef: onlinePlayerId,
   turnActiveRef: isLocalOnlineTurn,
   onFailPenalty: () => {
     if (timeLeft.value > 0) {
@@ -306,6 +326,7 @@ const resultPlayerScore = ref(0)
 const resultComputerScore = ref(0)
 const resultWinnerLabel = ref('')
 const resultLeaderboard = ref([])
+const resultWinnerClass = ref('')
 const overlayVisible = ref(false)
 const overlayType = ref('rules')
 const changelogEntries = uiText.changelog
@@ -372,6 +393,7 @@ const mainBoardState = computed(() => ({
   palindromeActive: palindromeActive.value,
   scoreValue: scoreValue.value,
   scoreFontSize: scoreFontSize.value,
+  playerColors: onlineColorMap.value,
 }))
 const scoreBoardRef = ref(null)
 
@@ -483,6 +505,7 @@ const resetMode = () => {
   resultComputerScore.value = 0
   resultWinnerLabel.value = ''
   resultWinnerScore.value = 0
+  resultWinnerClass.value = ''
   resultLeaderboard.value = []
   stopTimer()
   cleanupOnlineChannels()
@@ -574,12 +597,14 @@ const finishGame = () => {
         id: player.player_id,
         name: player.name,
         score: scores[player.player_id] ?? 0,
+        colorClass: onlineColorMap.value[player.player_id] || 'text-neon-yellow',
       }))
       .sort((a, b) => b.score - a.score)
     resultLeaderboard.value = leaderboard
     const top = leaderboard[0]
     resultWinnerLabel.value = top ? top.name : uiText.results.tie
     resultWinnerScore.value = top ? top.score : 0
+    resultWinnerClass.value = top ? top.colorClass : ''
     resultPlayerScore.value = scores[onlinePlayerId.value] ?? 0
     resultComputerScore.value = 0
   } else {
@@ -595,6 +620,7 @@ const finishGame = () => {
       resultWinnerLabel.value = uiText.results.tie
       resultWinnerScore.value = playerPoints.value
     }
+    resultWinnerClass.value = ''
   }
   isStarted.value = false
   timeLeft.value = 0

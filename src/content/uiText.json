@@ -60,12 +60,18 @@
     "bonus": [
       "Base: points des lettres selon src/assets/scrabble.json.",
       "Palindrome: bonus si le mot se lit pareil a l envers (+10).",
+      "Anagramme: bonus si le mot reutilise les memes lettres que le mot precedent (+5).",
+      "Double lettre: bonus +2 par occurrence de lettres consecutives.",
       "Super Suite: bonus si la premiere lettre est adjacente a celle du mot precedent.",
       "Super Shrink: bonus si la longueur differe de +/-1 par rapport au mot precedent.",
       "Initial Gap: bonus selon la distance alphabetique entre premieres lettres."
     ]
   },
   "changelog": [
+    {
+      "version": "0.5.15",
+      "items": ["Add per-player colors for online scores and word list.", "Add anagram and double-letter bonuses."]
+    },
     {
       "version": "0.5.2",
       "items": ["Add header buttons linking to the changelog and detailed rules."]

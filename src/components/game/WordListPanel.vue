@@ -7,7 +7,7 @@
           type="button"
           :class="[
             'w-full text-left font-accent text-sm sm:text-base md:text-lg',
-            word.owner === 'computer' || word.owner === 'player2' ? 'text-neon-purple' : 'text-neon-yellow',
+            wordColor(word),
           ]"
           @click="$emit('toggle', index)"
         >
@@ -31,9 +31,20 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  playerColors: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 defineEmits(['toggle'])
+
+const wordColor = (word) => {
+  if (word?.ownerId && props.playerColors?.[word.ownerId]) {
+    return props.playerColors[word.ownerId]
+  }
+  return word.owner === 'computer' || word.owner === 'player2' ? 'text-neon-purple' : 'text-neon-yellow'
+}
 
 watch(
   () => props.words.length,

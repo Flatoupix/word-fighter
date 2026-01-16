@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.15
+
+- Add per-player colors for online scores and word list.
+- Add anagram and double-letter bonuses.
+
 ## 0.5.14
 
 - Keep online results consistent between host and clients.

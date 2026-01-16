@@ -23,9 +23,13 @@
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
             <span class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/80">1er</span>
-            <span class="font-ui uppercase tracking-wide text-neon-yellow">{{ leaderPlayer.name }}</span>
+            <span :class="['font-ui uppercase tracking-wide', playerColor(leaderPlayer)]">
+              {{ leaderPlayer.name }}
+            </span>
           </div>
-          <span class="font-numbers text-sm text-neon-yellow sm:text-base">{{ leaderPlayer.score }}</span>
+          <span :class="['font-numbers text-sm sm:text-base', playerColor(leaderPlayer)]">
+            {{ leaderPlayer.score }}
+          </span>
         </div>
         <div
           v-if="isActive(leaderPlayer)"
@@ -50,9 +54,9 @@
               <span class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">
                 {{ rankLabel(player.rank) }}
               </span>
-              <span class="font-ui uppercase tracking-wide">{{ player.name }}</span>
+              <span :class="['font-ui uppercase tracking-wide', playerColor(player)]">{{ player.name }}</span>
             </div>
-            <span class="font-numbers text-sm text-neon-yellow">{{ player.score }}</span>
+            <span :class="['font-numbers text-sm', playerColor(player)]">{{ player.score }}</span>
           </div>
           <div v-if="isActive(player)" class="mt-1 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/80">
             tour
@@ -170,6 +174,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  onlineColors: {
+    type: Object,
+    default: () => ({}),
+  },
   activePlayerId: {
     type: String,
     default: '',
@@ -180,6 +188,7 @@ defineEmits(['update:wordInput', 'submit'])
 
 const isActive = (player) => props.activePlayerId && player.player_id === props.activePlayerId
 const playerScore = (player) => props.onlineScores?.[player.player_id] ?? 0
+const playerColor = (player) => props.onlineColors?.[player.player_id] || 'text-neon-yellow'
 const rankedPlayers = computed(() => {
   return props.onlinePlayers
     .map((player, index) => ({

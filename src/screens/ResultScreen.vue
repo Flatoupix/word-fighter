@@ -12,7 +12,9 @@
     <h2 class="text-center font-display text-2xl text-neon-yellow sm:text-3xl">Résultat</h2>
     <div class="mt-4 text-center">
       <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Gagnant</div>
-      <div class="font-display text-3xl text-neon-purple sm:text-4xl">{{ winnerLabel }}</div>
+      <div :class="['font-display text-3xl sm:text-4xl', winnerClass || 'text-neon-purple']">
+        {{ winnerLabel }}
+      </div>
       <div class="mt-2 font-numbers text-4xl text-neon-orange sm:text-5xl">{{ winnerScore }}</div>
     </div>
     <div v-if="isOnline" class="mt-6 rounded-md border border-neon-pink/60 bg-black/30 p-3">
@@ -23,10 +25,12 @@
           :key="entry.id || `${entry.name}-${index}`"
           class="flex items-center justify-between rounded-md border border-neon-pink/40 px-3 py-2 text-xs text-neon-yellow sm:text-sm"
         >
-          <span class="font-ui uppercase tracking-wide">
+          <span :class="['font-ui uppercase tracking-wide', entry.colorClass || 'text-neon-yellow']">
             {{ index + 1 }}. {{ entry.name }}
           </span>
-          <span class="font-numbers text-sm text-neon-yellow sm:text-base">{{ entry.score }}</span>
+          <span :class="['font-numbers text-sm sm:text-base', entry.colorClass || 'text-neon-yellow']">
+            {{ entry.score }}
+          </span>
         </li>
       </ul>
     </div>
@@ -59,6 +63,10 @@ defineProps({
   winnerScore: {
     type: Number,
     required: true,
+  },
+  winnerClass: {
+    type: String,
+    default: '',
   },
   playerScore: {
     type: Number,

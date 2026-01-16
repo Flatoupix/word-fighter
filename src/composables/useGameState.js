@@ -12,6 +12,7 @@ export const useGameState = ({
   modeRef = ref('pvc'),
   gameTypeRef = ref('word-fight'),
   grammarTagRef = ref(''),
+  onlinePlayerIdRef = ref(''),
   turnActiveRef = ref(true),
   onFailPenalty = () => {},
 } = {}) => {
@@ -255,13 +256,59 @@ export const useGameState = ({
     return Math.abs(firstIndex - secondIndex)
   }
 
+  const isAnagram = (firstWord, secondWord) => {
+    const normalizedFirst = normalizeWord(firstWord || '')
+    const normalizedSecond = normalizeWord(secondWord || '')
+    if (!normalizedFirst || !normalizedSecond) {
+      return false
+    }
+    if (normalizedFirst === normalizedSecond) {
+      return false
+    }
+    if (normalizedFirst.length !== normalizedSecond.length) {
+      return false
+    }
+    const sortedFirst = normalizedFirst.split('').sort().join('')
+    const sortedSecond = normalizedSecond.split('').sort().join('')
+    return sortedFirst === sortedSecond
+  }
+
+  const countDoubleLetters = (word) => {
+    const normalized = normalizeWord(word || '')
+    if (!normalized) {
+      return 0
+    }
+    let count = 0
+    for (let i = 1; i < normalized.length; i += 1) {
+      if (normalized[i] === normalized[i - 1]) {
+        count += 1
+      }
+    }
+    return count
+  }
+
   const pointsCount = () => {
+    const currentWord = wordList.value[wordList.value.length - 1] || ''
     if (wordList.value.length > 1) {
       const lastIndex = wordList.value.length - 1
       const prevIndex = lastIndex - 1
-      calcPoints.value += howManyLettersBetween(wordList.value[lastIndex], wordList.value[prevIndex])
-      isAdjacentLetter(wordList.value[lastIndex], wordList.value[prevIndex])
-      isGreaterOrTinierWord(wordList.value[lastIndex], wordList.value[prevIndex])
+      const lastWord = wordList.value[lastIndex]
+      const prevWord = wordList.value[prevIndex]
+      calcPoints.value += howManyLettersBetween(lastWord, prevWord)
+      isAdjacentLetter(lastWord, prevWord)
+      isGreaterOrTinierWord(lastWord, prevWord)
+      if (isAnagram(prevWord, lastWord)) {
+        const anagramBonus = 5
+        calcPoints.value += anagramBonus
+        addBonusPoints(anagramBonus)
+      }
+    }
+
+    const doubleLetterCount = countDoubleLetters(currentWord)
+    if (doubleLetterCount > 0) {
+      const doubleLetterBonus = doubleLetterCount * 2
+      calcPoints.value += doubleLetterBonus
+      addBonusPoints(doubleLetterBonus)
     }
 
     calcPoints.value += isPalindrome(wordPlayed.value)
@@ -425,6 +472,7 @@ export const useGameState = ({
       description: formatFrequency(entry.freqLemma, entry.freqForm),
       visible: false,
       owner,
+      ownerId: isOnlineMode.value ? onlinePlayerIdRef.value : null,
       tags: entry.tags || [],
     }
 
