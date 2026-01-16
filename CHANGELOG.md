@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.10
+
+- Keep online players in-game after host starts (avoid returning to selection screens).
+
+## 0.5.9
+
+- Move App.vue UI text into a JSON source for reuse.
+
 ## 0.5.8
 
 - Use a more readable font for the rules/changelog overlay text.

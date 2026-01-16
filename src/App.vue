@@ -3,9 +3,9 @@
     <div class="mx-auto flex min-h-screen max-w-6xl flex-col gap-4 px-3 py-4 text-glow fade-in sm:gap-6 sm:px-4 sm:py-6">
       <header class="text-center">
         <h1 class="font-display text-3xl tracking-wide text-neon-purple sm:text-4xl md:text-5xl">
-          Word Fighter
+          {{ uiText.header.title }}
         </h1>
-        <p class="mt-2 text-xs text-neon-yellow/80 sm:text-sm">Tape un mot pour marquer des points.</p>
+        <p class="mt-2 text-xs text-neon-yellow/80 sm:text-sm">{{ uiText.header.subtitle }}</p>
         <div
           class="mt-3 flex flex-wrap items-center justify-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60"
         >
@@ -14,14 +14,14 @@
             class="inline-flex items-center rounded-full border border-neon-pink/60 px-3 py-1 font-ui text-xs normal-case tracking-normal text-neon-yellow/70 transition hover:border-neon-purple/80 hover:text-neon-yellow sm:text-sm"
             @click="openOverlay('changelog')"
           >
-            Changelog
+            {{ uiText.header.buttons.changelog }}
           </button>
           <button
             type="button"
             class="inline-flex items-center rounded-full border border-neon-pink/60 px-3 py-1 font-ui text-xs normal-case tracking-normal text-neon-yellow/70 transition hover:border-neon-purple/80 hover:text-neon-yellow sm:text-sm"
             @click="openOverlay('rules')"
           >
-            Regles precises
+            {{ uiText.header.buttons.rules }}
           </button>
         </div>
       </header>
@@ -56,25 +56,29 @@
         @back="goBack"
       />
 
-      <EntryScreen v-else-if="!entryStep" @select="selectEntry" />
+      <EntryScreen v-else-if="!entryStep && !isStarted" @select="selectEntry" />
 
-      <CreateModeScreen v-else-if="entryStep === 'create'" @select="selectCreateMode" @back="goBack" />
+      <CreateModeScreen v-else-if="entryStep === 'create' && !isStarted" @select="selectCreateMode" @back="goBack" />
 
       <GameTypeSelectScreen
-        v-else-if="(entryStep === 'local' || entryStep === 'online') && !gameType"
+        v-else-if="!isStarted && (entryStep === 'local' || entryStep === 'online') && !gameType"
         @select="selectGameType"
       />
 
       <GrammarTagSelectScreen
-        v-else-if="gameType === 'grammar-war' && !grammarTag"
+        v-else-if="!isStarted && gameType === 'grammar-war' && !grammarTag"
         @select="selectGrammarTag"
         @back="goBack"
       />
 
-      <ModeSelectScreen v-else-if="entryStep === 'local' && !selectedMode" @select="selectMode" @back="goBack" />
+      <ModeSelectScreen
+        v-else-if="!isStarted && entryStep === 'local' && !selectedMode"
+        @select="selectMode"
+        @back="goBack"
+      />
 
       <PlayerNamesScreen
-        v-else-if="selectedMode === 'pvp' && !namesConfirmed"
+        v-else-if="!isStarted && selectedMode === 'pvp' && !namesConfirmed"
         :playerOneName="playerOneName"
         :playerTwoName="playerTwoName"
         @confirm="confirmNames"
@@ -82,7 +86,7 @@
       />
 
       <TimeSelectScreen
-        v-else-if="!selectedDuration && selectedMode !== 'online'"
+        v-else-if="!isStarted && !selectedDuration && selectedMode !== 'online'"
         @select="selectDuration"
         @back="goBack"
       />
@@ -97,9 +101,11 @@
             class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
             @click="goBack"
           >
-            ← Back
+            {{ uiText.actions.back }}
           </button>
-          <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">Prêt ?</h2>
+          <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">
+            {{ uiText.actions.ready }}
+          </h2>
           <div class="mt-3 text-center font-numbers text-3xl text-neon-yellow sm:text-4xl">
             {{ formattedTime }}
           </div>
@@ -108,7 +114,7 @@
             class="mt-4 w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-4 text-center transition hover:border-neon-purple/80 hover:bg-black/40 sm:py-5"
             @click="startTimer"
           >
-            <span class="font-display text-xl text-neon-yellow sm:text-2xl">Start</span>
+            <span class="font-display text-xl text-neon-yellow sm:text-2xl">{{ uiText.actions.start }}</span>
           </button>
         </section>
 
@@ -140,10 +146,10 @@
             @submit="onSubmit"
           />
           <div class="text-center text-xs text-neon-yellow/60">
-            Mode: {{ modeLabel }} · Temps: {{ durationLabel
-            }}<template v-if="grammarTagLabel"> · Tag: {{ grammarTagLabel }}</template>
+            {{ uiText.labels.mode }}: {{ modeLabel }} · {{ uiText.labels.time }}: {{ durationLabel
+            }}<template v-if="grammarTagLabel"> · {{ uiText.labels.tag }}: {{ grammarTagLabel }}</template>
             <button type="button" class="ml-2 text-neon-purple/80 hover:text-neon-purple" @click="resetMode">
-              changer
+              {{ uiText.actions.change }}
             </button>
           </div>
         </template>
@@ -169,7 +175,7 @@
           class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
           @click="closeOverlay"
         >
-          Fermer
+          {{ uiText.overlay.close }}
         </button>
       </div>
       <div
@@ -177,7 +183,9 @@
       >
         <template v-if="overlayType === 'changelog'">
           <div v-for="entry in changelogEntries" :key="entry.version" class="space-y-2">
-            <div class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">Version {{ entry.version }}</div>
+            <div class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">
+              {{ uiText.overlay.versionLabel }} {{ entry.version }}
+            </div>
             <ul class="space-y-1 text-xs text-neon-yellow/70 sm:text-sm">
               <li v-for="item in entry.items" :key="item">- {{ item }}</li>
             </ul>
@@ -185,13 +193,17 @@
         </template>
         <template v-else>
           <section class="space-y-2">
-            <h3 class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">Deroulement</h3>
+            <h3 class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">
+              {{ uiText.overlay.sections.flow }}
+            </h3>
             <ul class="space-y-1 text-xs text-neon-yellow/70 sm:text-sm">
               <li v-for="item in rulesFlow" :key="item">- {{ item }}</li>
             </ul>
           </section>
           <section class="space-y-2">
-            <h3 class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">Bonus</h3>
+            <h3 class="text-xs font-ui uppercase tracking-wide text-neon-yellow/60">
+              {{ uiText.overlay.sections.bonus }}
+            </h3>
             <ul class="space-y-1 text-xs text-neon-yellow/70 sm:text-sm">
               <li v-for="item in rulesScoring" :key="item">- {{ item }}</li>
             </ul>
@@ -217,6 +229,7 @@ import ResultScreen from './screens/ResultScreen.vue'
 import TimeSelectScreen from './screens/TimeSelectScreen.vue'
 import { useGameState } from './composables/useGameState'
 import { supabase } from './lib/supabaseClient'
+import uiText from './content/uiText.json'
 
 const gameType = ref('')
 const grammarTag = ref('')
@@ -232,8 +245,8 @@ const onlineRoomSettings = ref({ gameType: '', tag: '', duration: 1, turnIndex: 
 const onlineRoomState = ref({ words: [], normalized: [], scores: {} })
 const isApplyingRemote = ref(false)
 const lastSyncedWordIndex = ref(0)
-const playerOneName = ref('Player 1')
-const playerTwoName = ref('Player 2')
+const playerOneName = ref(uiText.players.defaultOne)
+const playerTwoName = ref(uiText.players.defaultTwo)
 const namesConfirmed = ref(false)
 const activeOnlinePlayerId = computed(() => onlinePlayers.value[onlineTurnIndex.value]?.player_id || '')
 const isLocalOnlineTurn = computed(() => {
@@ -288,35 +301,12 @@ const resultComputerScore = ref(0)
 const resultWinnerLabel = ref('')
 const overlayVisible = ref(false)
 const overlayType = ref('rules')
-const changelogEntries = [
-  {
-    version: '0.5.2',
-    items: ['Add header buttons linking to the changelog and detailed rules.'],
-  },
-  {
-    version: '0.5.1',
-    items: ['Add create-online game type selection before the online lobby.', 'Document the menu flow tree in README.'],
-  },
-  {
-    version: '0.5.0',
-    items: ['Split entry flow into "Join" and "Create", with create branching to online or local.'],
-  },
-]
-const rulesFlow = [
-  'Le chrono demarre au clic sur Start et la manche dure jusqu a zero.',
-  'Chaque tour consiste a proposer un mot valide.',
-  'Un mot valide est ajoute a la liste et rapporte des points.',
-  'Un mot invalide affiche FAIL et retire 1 seconde.',
-  'La manche se termine a la fin du temps et affiche le resultat.',
-]
-const rulesScoring = [
-  'Base: points des lettres selon src/assets/scrabble.json.',
-  'Palindrome: bonus si le mot se lit pareil a l envers (+10).',
-  'Super Suite: bonus si la premiere lettre est adjacente a celle du mot precedent.',
-  'Super Shrink: bonus si la longueur differe de +/-1 par rapport au mot precedent.',
-  'Initial Gap: bonus selon la distance alphabetique entre premieres lettres.',
-]
-const overlayTitle = computed(() => (overlayType.value === 'changelog' ? 'Changelog' : 'Regles precises'))
+const changelogEntries = uiText.changelog
+const rulesFlow = uiText.rules.flow
+const rulesScoring = uiText.rules.bonus
+const overlayTitle = computed(() =>
+  overlayType.value === 'changelog' ? uiText.overlay.changelogTitle : uiText.overlay.rulesTitle,
+)
 const openOverlay = (type) => {
   overlayType.value = type
   overlayVisible.value = true
@@ -329,20 +319,24 @@ let timerId = null
 let onlineRoomChannel = null
 let onlinePlayersChannel = null
 const modeLabel = computed(() => {
-  if (selectedMode.value === 'solo') return 'Solo'
-  if (selectedMode.value === 'pvc') return 'Player VS Computer'
-  if (selectedMode.value === 'pvp') return 'Player VS Player'
-  if (selectedMode.value === 'online') return 'Online Battle'
+  if (selectedMode.value === 'solo') return uiText.modes.solo
+  if (selectedMode.value === 'pvc') return uiText.modes.pvc
+  if (selectedMode.value === 'pvp') return uiText.modes.pvp
+  if (selectedMode.value === 'online') return uiText.modes.online
   return ''
 })
-const playerOneLabel = computed(() => (selectedMode.value === 'pvp' ? playerOneName.value : 'Player'))
-const playerTwoLabel = computed(() => (selectedMode.value === 'pvp' ? playerTwoName.value : 'Computer'))
-const durationLabel = computed(() => (selectedDuration.value ? `${selectedDuration.value} min` : ''))
+const playerOneLabel = computed(() => (selectedMode.value === 'pvp' ? playerOneName.value : uiText.players.player))
+const playerTwoLabel = computed(() =>
+  selectedMode.value === 'pvp' ? playerTwoName.value : uiText.players.computer,
+)
+const durationLabel = computed(() =>
+  selectedDuration.value ? `${selectedDuration.value} ${uiText.labels.minutesSuffix}` : '',
+)
 const onlineScores = computed(() => onlineRoomState.value.scores || {})
 const grammarTagLabel = computed(() => {
-  if (grammarTag.value === 'VER') return 'Verbes'
-  if (grammarTag.value === 'ADJ') return 'Adjectifs'
-  if (grammarTag.value === 'NOM') return 'Noms'
+  if (grammarTag.value === 'VER') return uiText.grammarTags.VER
+  if (grammarTag.value === 'ADJ') return uiText.grammarTags.ADJ
+  if (grammarTag.value === 'NOM') return uiText.grammarTags.NOM
   return ''
 })
 const formattedTime = computed(() => {
@@ -425,8 +419,8 @@ const selectMode = (mode) => {
   selectedMode.value = mode
   if (mode !== 'pvp') {
     namesConfirmed.value = false
-    playerOneName.value = 'Player 1'
-    playerTwoName.value = 'Player 2'
+    playerOneName.value = uiText.players.defaultOne
+    playerTwoName.value = uiText.players.defaultTwo
   }
 }
 
@@ -465,8 +459,8 @@ const resetMode = () => {
   selectedDuration.value = 0
   timeLeft.value = 0
   isStarted.value = false
-  playerOneName.value = 'Player 1'
-  playerTwoName.value = 'Player 2'
+  playerOneName.value = uiText.players.defaultOne
+  playerTwoName.value = uiText.players.defaultTwo
   namesConfirmed.value = false
   showResults.value = false
   resultPlayerScore.value = 0
@@ -521,8 +515,8 @@ const goBack = () => {
     selectedMode.value = ''
     clearRoomParam()
     namesConfirmed.value = false
-    playerOneName.value = 'Player 1'
-    playerTwoName.value = 'Player 2'
+    playerOneName.value = uiText.players.defaultOne
+    playerTwoName.value = uiText.players.defaultTwo
     return
   }
   if (gameType.value === 'grammar-war' && grammarTag.value) {
@@ -565,7 +559,7 @@ const finishGame = () => {
     resultWinnerLabel.value = playerTwoLabel.value
     resultWinnerScore.value = comPoints.value
   } else {
-    resultWinnerLabel.value = 'Égalité'
+    resultWinnerLabel.value = uiText.results.tie
     resultWinnerScore.value = playerPoints.value
   }
   isStarted.value = false

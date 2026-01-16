@@ -1,0 +1,85 @@
+{
+  "header": {
+    "title": "Word Fighter",
+    "subtitle": "Tape un mot pour marquer des points.",
+    "buttons": {
+      "changelog": "Changelog",
+      "rules": "Regles precises"
+    }
+  },
+  "overlay": {
+    "close": "Fermer",
+    "changelogTitle": "Changelog",
+    "rulesTitle": "Règles",
+    "versionLabel": "Version",
+    "sections": {
+      "flow": "Deroulement",
+      "bonus": "Bonus"
+    }
+  },
+  "actions": {
+    "back": "← Back",
+    "ready": "Prêt ?",
+    "start": "Start",
+    "change": "changer"
+  },
+  "labels": {
+    "mode": "Mode",
+    "time": "Temps",
+    "tag": "Tag",
+    "minutesSuffix": "min"
+  },
+  "players": {
+    "defaultOne": "Player 1",
+    "defaultTwo": "Player 2",
+    "player": "Player",
+    "computer": "Computer"
+  },
+  "modes": {
+    "solo": "Solo",
+    "pvc": "Player VS Computer",
+    "pvp": "Player VS Player",
+    "online": "Online Battle"
+  },
+  "grammarTags": {
+    "VER": "Verbes",
+    "ADJ": "Adjectifs",
+    "NOM": "Noms"
+  },
+  "results": {
+    "tie": "Égalité"
+  },
+  "rules": {
+    "flow": [
+      "Le chrono demarre au clic sur Start et la manche dure jusqu a zero.",
+      "Chaque tour consiste a proposer un mot valide.",
+      "Un mot valide est ajoute a la liste et rapporte des points.",
+      "Un mot invalide affiche FAIL et retire 1 seconde.",
+      "La manche se termine a la fin du temps et affiche le resultat."
+    ],
+    "bonus": [
+      "Base: points des lettres selon src/assets/scrabble.json.",
+      "Palindrome: bonus si le mot se lit pareil a l envers (+10).",
+      "Super Suite: bonus si la premiere lettre est adjacente a celle du mot precedent.",
+      "Super Shrink: bonus si la longueur differe de +/-1 par rapport au mot precedent.",
+      "Initial Gap: bonus selon la distance alphabetique entre premieres lettres."
+    ]
+  },
+  "changelog": [
+    {
+      "version": "0.5.2",
+      "items": ["Add header buttons linking to the changelog and detailed rules."]
+    },
+    {
+      "version": "0.5.1",
+      "items": [
+        "Add create-online game type selection before the online lobby.",
+        "Document the menu flow tree in README."
+      ]
+    },
+    {
+      "version": "0.5.0",
+      "items": ["Split entry flow into \"Join\" and \"Create\", with create branching to online or local."]
+    }
+  ]
+}
