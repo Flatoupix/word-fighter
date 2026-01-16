@@ -56,6 +56,7 @@ export const useGameState = ({
   const isOnlineMode = computed(() => modeRef.value === 'online')
   const isGrammarWar = computed(() => gameTypeRef.value === 'grammar-war')
   const isKamoulox = computed(() => gameTypeRef.value === 'kamoulox')
+  let remoteTypeTimer = null
 
   const wordFail = () => {
     playAtDuring(failUrl)
@@ -482,6 +483,31 @@ export const useGameState = ({
     }
   }
 
+  const playRemoteWord = (word) => {
+    if (!word) {
+      return
+    }
+    if (remoteTypeTimer) {
+      clearTimeout(remoteTypeTimer)
+      remoteTypeTimer = null
+    }
+    wordPlayed.value = ''
+    const letters = word.split('')
+    let idx = 0
+    const step = () => {
+      if (idx < letters.length) {
+        wordPlayed.value += letters[idx]
+        idx += 1
+        remoteTypeTimer = setTimeout(step, 120)
+        return
+      }
+      remoteTypeTimer = setTimeout(() => {
+        wordPlayed.value = ''
+      }, 600)
+    }
+    step()
+  }
+
   const setOnlineSnapshot = ({ words = [], normalized = [], playerScore = 0, opponentScore = 0 }) => {
     wordList.value = normalized
     wordListDisp.value = words
@@ -633,6 +659,7 @@ export const useGameState = ({
     startSoloSeed,
     addWord,
     toggleWordVisibility,
+    playRemoteWord,
     setOnlineSnapshot,
   }
 }

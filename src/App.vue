@@ -34,6 +34,8 @@
         :computerScore="resultComputerScore"
         :playerLabel="playerOneLabel"
         :opponentLabel="playerTwoLabel"
+        :leaderboard="resultLeaderboard"
+        :isOnline="isOnlineSession"
         @restart="resetMode"
         @back="goBack"
       />
@@ -132,14 +134,14 @@
             :speedBonus="isStarted ? speedBonus : 0"
             :playerLabel="playerOneLabel"
             :opponentLabel="playerTwoLabel"
-            :isOnline="selectedMode === 'online'"
+            :isOnline="isOnlineSession"
             :onlinePlayers="onlinePlayers"
             :activePlayerId="activeOnlinePlayerId"
             :onlineScores="onlineScores"
             :disabled="
               isTyping ||
               !isStarted ||
-              (selectedMode === 'online'
+              (isOnlineSession
                 ? !isLocalOnlineTurn
                 : (selectedMode !== 'pvp' && selectedMode !== 'solo') && computerTurn)
             "
@@ -248,9 +250,12 @@ const lastSyncedWordIndex = ref(0)
 const playerOneName = ref(uiText.players.defaultOne)
 const playerTwoName = ref(uiText.players.defaultTwo)
 const namesConfirmed = ref(false)
+const isOnlineSession = computed(
+  () => selectedMode.value === 'online' || Boolean(onlineRoomId.value) || hasRoomParam.value,
+)
 const activeOnlinePlayerId = computed(() => onlinePlayers.value[onlineTurnIndex.value]?.player_id || '')
 const isLocalOnlineTurn = computed(() => {
-  if (selectedMode.value !== 'online') return true
+  if (!isOnlineSession.value) return true
   if (!onlinePlayers.value.length) return true
   if (!onlinePlayerId.value) return true
   return activeOnlinePlayerId.value === onlinePlayerId.value
@@ -280,6 +285,7 @@ const {
   startSoloSeed,
   addWord,
   toggleWordVisibility,
+  playRemoteWord,
   setOnlineSnapshot,
 } = useGameState({
   modeRef: selectedMode,
@@ -299,6 +305,7 @@ const showResults = ref(false)
 const resultPlayerScore = ref(0)
 const resultComputerScore = ref(0)
 const resultWinnerLabel = ref('')
+const resultLeaderboard = ref([])
 const overlayVisible = ref(false)
 const overlayType = ref('rules')
 const changelogEntries = uiText.changelog
@@ -325,10 +332,19 @@ const modeLabel = computed(() => {
   if (selectedMode.value === 'online') return uiText.modes.online
   return ''
 })
-const playerOneLabel = computed(() => (selectedMode.value === 'pvp' ? playerOneName.value : uiText.players.player))
-const playerTwoLabel = computed(() =>
-  selectedMode.value === 'pvp' ? playerTwoName.value : uiText.players.computer,
-)
+const localOnlineName = computed(() => {
+  if (!isOnlineSession.value) return ''
+  const player = onlinePlayers.value.find((entry) => entry.player_id === onlinePlayerId.value)
+  return player?.name || uiText.players.player
+})
+const playerOneLabel = computed(() => {
+  if (isOnlineSession.value) return localOnlineName.value
+  return selectedMode.value === 'pvp' ? playerOneName.value : uiText.players.player
+})
+const playerTwoLabel = computed(() => {
+  if (isOnlineSession.value) return ''
+  return selectedMode.value === 'pvp' ? playerTwoName.value : uiText.players.computer
+})
 const durationLabel = computed(() =>
   selectedDuration.value ? `${selectedDuration.value} ${uiText.labels.minutesSuffix}` : '',
 )
@@ -467,6 +483,7 @@ const resetMode = () => {
   resultComputerScore.value = 0
   resultWinnerLabel.value = ''
   resultWinnerScore.value = 0
+  resultLeaderboard.value = []
   stopTimer()
   cleanupOnlineChannels()
 }
@@ -485,7 +502,7 @@ const goBack = () => {
   if (isStarted.value) {
     return
   }
-  if (selectedMode.value === 'online') {
+  if (isOnlineSession.value) {
     selectedMode.value = ''
     entryStep.value = onlineEntryMode.value === 'create' ? 'online' : ''
     onlineEntryMode.value = 'join'
@@ -550,17 +567,34 @@ const finishGame = () => {
     clearInterval(timerId)
     timerId = null
   }
-  resultPlayerScore.value = playerPoints.value
-  resultComputerScore.value = comPoints.value
-  if (playerPoints.value > comPoints.value) {
-    resultWinnerLabel.value = playerOneLabel.value
-    resultWinnerScore.value = playerPoints.value
-  } else if (comPoints.value > playerPoints.value) {
-    resultWinnerLabel.value = playerTwoLabel.value
-    resultWinnerScore.value = comPoints.value
+  if (selectedMode.value === 'online') {
+    const scores = onlineRoomState.value.scores || {}
+    const leaderboard = onlinePlayers.value
+      .map((player) => ({
+        id: player.player_id,
+        name: player.name,
+        score: scores[player.player_id] ?? 0,
+      }))
+      .sort((a, b) => b.score - a.score)
+    resultLeaderboard.value = leaderboard
+    const top = leaderboard[0]
+    resultWinnerLabel.value = top ? top.name : uiText.results.tie
+    resultWinnerScore.value = top ? top.score : 0
+    resultPlayerScore.value = scores[onlinePlayerId.value] ?? 0
+    resultComputerScore.value = 0
   } else {
-    resultWinnerLabel.value = uiText.results.tie
-    resultWinnerScore.value = playerPoints.value
+    resultPlayerScore.value = playerPoints.value
+    resultComputerScore.value = comPoints.value
+    if (playerPoints.value > comPoints.value) {
+      resultWinnerLabel.value = playerOneLabel.value
+      resultWinnerScore.value = playerPoints.value
+    } else if (comPoints.value > playerPoints.value) {
+      resultWinnerLabel.value = playerTwoLabel.value
+      resultWinnerScore.value = comPoints.value
+    } else {
+      resultWinnerLabel.value = uiText.results.tie
+      resultWinnerScore.value = playerPoints.value
+    }
   }
   isStarted.value = false
   timeLeft.value = 0
@@ -610,7 +644,7 @@ const clearRoomParam = () => {
 }
 
 const onSubmit = () => {
-  if (selectedMode.value === 'online' && !isLocalOnlineTurn.value) {
+  if (isOnlineSession.value && !isLocalOnlineTurn.value) {
     return
   }
   addWord(wordInput.value)
@@ -787,6 +821,7 @@ watch(
 )
 
 const applyOnlineSnapshot = () => {
+  const previousCount = lastSyncedWordIndex.value
   isApplyingRemote.value = true
   const words = onlineRoomState.value.words.map((word) => ({
     ...word,
@@ -798,6 +833,10 @@ const applyOnlineSnapshot = () => {
     playerScore: onlineRoomState.value.scores?.[onlinePlayerId.value] || 0,
     opponentScore: 0,
   })
+  const latest = onlineRoomState.value.words[onlineRoomState.value.words.length - 1]
+  if (words.length > previousCount && latest && latest.ownerId !== onlinePlayerId.value) {
+    playRemoteWord(latest.text)
+  }
   lastSyncedWordIndex.value = words.length
   isApplyingRemote.value = false
 }

@@ -15,7 +15,22 @@
       <div class="font-display text-3xl text-neon-purple sm:text-4xl">{{ winnerLabel }}</div>
       <div class="mt-2 font-numbers text-4xl text-neon-orange sm:text-5xl">{{ winnerScore }}</div>
     </div>
-    <div class="mt-6 grid gap-3 text-center md:grid-cols-2">
+    <div v-if="isOnline" class="mt-6 rounded-md border border-neon-pink/60 bg-black/30 p-3">
+      <div class="text-center text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Classement</div>
+      <ul class="mt-3 space-y-2">
+        <li
+          v-for="(entry, index) in leaderboard"
+          :key="entry.id || `${entry.name}-${index}`"
+          class="flex items-center justify-between rounded-md border border-neon-pink/40 px-3 py-2 text-xs text-neon-yellow sm:text-sm"
+        >
+          <span class="font-ui uppercase tracking-wide">
+            {{ index + 1 }}. {{ entry.name }}
+          </span>
+          <span class="font-numbers text-sm text-neon-yellow sm:text-base">{{ entry.score }}</span>
+        </li>
+      </ul>
+    </div>
+    <div v-else class="mt-6 grid gap-3 text-center md:grid-cols-2">
       <div class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
         <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ playerLabel }}</div>
         <div class="font-numbers text-2xl text-neon-yellow sm:text-3xl">{{ playerScore }}</div>
@@ -60,6 +75,14 @@ defineProps({
   opponentLabel: {
     type: String,
     required: true,
+  },
+  isOnline: {
+    type: Boolean,
+    default: false,
+  },
+  leaderboard: {
+    type: Array,
+    default: () => [],
   },
 })
 

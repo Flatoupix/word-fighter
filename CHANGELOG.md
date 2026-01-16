@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.14
+
+- Keep online results consistent between host and clients.
+
+## 0.5.13
+
+- Show online player name in results and replace computer panel with leaderboard.
+
+## 0.5.12
+
+- Play remote online words in the main typing display.
+
 ## 0.5.11
 
 - Highlight the top online score and rank other players in the list.
