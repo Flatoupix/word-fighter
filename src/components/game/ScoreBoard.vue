@@ -19,9 +19,24 @@
       class="rounded-md border border-neon-pink/70 bg-black/40 p-2 text-left backdrop-blur-sm sm:p-3"
     >
       <h2 class="text-center font-display text-lg text-neon-yellow sm:text-xl">Joueurs</h2>
-      <ul v-if="orderedPlayers.length" class="mt-3 max-h-48 space-y-2 overflow-y-auto pr-1">
+      <div v-if="leaderPlayer" class="mt-3 rounded-md border border-neon-yellow/70 bg-neon-yellow/10 px-3 py-2">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/80">1er</span>
+            <span class="font-ui uppercase tracking-wide text-neon-yellow">{{ leaderPlayer.name }}</span>
+          </div>
+          <span class="font-numbers text-sm text-neon-yellow sm:text-base">{{ leaderPlayer.score }}</span>
+        </div>
+        <div
+          v-if="isActive(leaderPlayer)"
+          class="mt-1 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/80"
+        >
+          tour
+        </div>
+      </div>
+      <ul v-if="rankedPlayers.length > 1" class="mt-3 max-h-40 space-y-2 overflow-y-auto pr-1">
         <li
-          v-for="player in orderedPlayers"
+          v-for="player in rankedPlayers.slice(1)"
           :key="player.player_id"
           :class="[
             'rounded-md border px-3 py-2 text-xs sm:text-sm',
@@ -31,15 +46,22 @@
           ]"
         >
           <div class="flex items-center justify-between gap-2">
-            <span class="font-ui uppercase tracking-wide">{{ player.name }}</span>
-            <span class="font-numbers text-sm text-neon-yellow">{{ playerScore(player) }}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">
+                {{ rankLabel(player.rank) }}
+              </span>
+              <span class="font-ui uppercase tracking-wide">{{ player.name }}</span>
+            </div>
+            <span class="font-numbers text-sm text-neon-yellow">{{ player.score }}</span>
           </div>
           <div v-if="isActive(player)" class="mt-1 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/80">
             tour
           </div>
         </li>
       </ul>
-      <div v-else class="mt-3 text-center text-xs text-neon-yellow/60">En attente de joueurs...</div>
+      <div v-else-if="!leaderPlayer" class="mt-3 text-center text-xs text-neon-yellow/60">
+        En attente de joueurs...
+      </div>
     </div>
 
     <div
@@ -156,20 +178,23 @@ const props = defineProps({
 
 defineEmits(['update:wordInput', 'submit'])
 
-const orderedPlayers = computed(() => {
-  if (!props.onlinePlayers.length) return []
-  if (!props.activePlayerId) return props.onlinePlayers
-  const activeIndex = props.onlinePlayers.findIndex((player) => player.player_id === props.activePlayerId)
-  if (activeIndex <= 0) return props.onlinePlayers
-  return [
-    props.onlinePlayers[activeIndex],
-    ...props.onlinePlayers.slice(0, activeIndex),
-    ...props.onlinePlayers.slice(activeIndex + 1),
-  ]
-})
-
 const isActive = (player) => props.activePlayerId && player.player_id === props.activePlayerId
 const playerScore = (player) => props.onlineScores?.[player.player_id] ?? 0
+const rankedPlayers = computed(() => {
+  return props.onlinePlayers
+    .map((player, index) => ({
+      ...player,
+      score: playerScore(player),
+      sortIndex: index,
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score
+      return a.sortIndex - b.sortIndex
+    })
+    .map((player, index) => ({ ...player, rank: index + 1 }))
+})
+const leaderPlayer = computed(() => rankedPlayers.value[0] || null)
+const rankLabel = (rank) => (rank === 1 ? '1er' : `${rank}e`)
 
 defineExpose({
   focusInput: () => {

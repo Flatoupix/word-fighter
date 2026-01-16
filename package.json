@@ -1,6 +1,6 @@
 {
   "name": "word-fighter",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "private": true,
   "scripts": {
     "dev": "vite",

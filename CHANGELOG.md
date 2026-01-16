@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.11
+
+- Highlight the top online score and rank other players in the list.
+
 ## 0.5.10
 
 - Keep online players in-game after host starts (avoid returning to selection screens).
