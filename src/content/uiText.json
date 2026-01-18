@@ -69,6 +69,10 @@
   },
   "changelog": [
     {
+      "version": "0.5.16",
+      "items": ["Keep online snapshot updates from resetting local typing flow."]
+    },
+    {
       "version": "0.5.15",
       "items": ["Add per-player colors for online scores and word list.", "Add anagram and double-letter bonuses."]
     },

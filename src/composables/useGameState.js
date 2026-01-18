@@ -556,16 +556,24 @@ export const useGameState = ({
     step()
   }
 
-  const setOnlineSnapshot = ({ words = [], normalized = [], playerScore = 0, opponentScore = 0 }) => {
+  const setOnlineSnapshot = ({
+    words = [],
+    normalized = [],
+    playerScore = 0,
+    opponentScore = 0,
+    resetTransient = true,
+  }) => {
     wordList.value = normalized
     wordListDisp.value = words
     playerPoints.value = playerScore
     comPoints.value = opponentScore
-    wordPlayed.value = ''
-    calcPoints.value = 0
-    pointsAdded.value = []
-    wrongWord.value = false
-    isTyping.value = false
+    if (resetTransient) {
+      wordPlayed.value = ''
+      calcPoints.value = 0
+      pointsAdded.value = []
+      wrongWord.value = false
+      isTyping.value = false
+    }
   }
 
   onMounted(() => {

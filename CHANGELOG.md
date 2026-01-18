@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.16
+
+- Keep online snapshot updates from resetting local typing flow.
+
 ## 0.5.15
 
 - Add per-player colors for online scores and word list.

@@ -843,6 +843,7 @@ const applyOnlineSnapshot = () => {
     normalized: onlineRoomState.value.normalized,
     playerScore: onlineRoomState.value.scores?.[onlinePlayerId.value] || 0,
     opponentScore: 0,
+    resetTransient: !isStarted.value,
   })
   const latest = onlineRoomState.value.words[onlineRoomState.value.words.length - 1]
   if (words.length > previousCount && latest && latest.ownerId !== onlinePlayerId.value) {
