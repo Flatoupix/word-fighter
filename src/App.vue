@@ -95,31 +95,15 @@
       />
 
       <template v-else>
-        <section
+        <ReadyScreen
           v-if="!isStarted"
-          class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm sm:p-4 md:max-w-[33vw]"
-        >
-          <button
-            type="button"
-            class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
-            @click="goBack"
-          >
-            {{ uiText.actions.back }}
-          </button>
-          <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">
-            {{ uiText.actions.ready }}
-          </h2>
-          <div class="mt-3 text-center font-numbers text-3xl text-neon-yellow sm:text-4xl">
-            {{ formattedTime }}
-          </div>
-          <button
-            type="button"
-            class="mt-4 w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-4 text-center transition hover:border-neon-purple/80 hover:bg-black/40 sm:py-5"
-            @click="startTimer"
-          >
-            <span class="font-display text-xl text-neon-yellow sm:text-2xl">{{ uiText.actions.start }}</span>
-          </button>
-        </section>
+          :formattedTime="formattedTime"
+          :readyLabel="uiText.actions.ready"
+          :startLabel="uiText.actions.start"
+          :backLabel="uiText.actions.back"
+          @start="startTimer"
+          @back="goBack"
+        />
 
         <template v-else>
           <MainBoard :state="mainBoardState" @toggle="toggleWordVisibility" />
@@ -229,6 +213,7 @@ import GrammarTagSelectScreen from './screens/GrammarTagSelectScreen.vue'
 import ModeSelectScreen from './screens/ModeSelectScreen.vue'
 import OnlineRoomScreen from './screens/OnlineRoomScreen.vue'
 import PlayerNamesScreen from './screens/PlayerNamesScreen.vue'
+import ReadyScreen from './screens/ReadyScreen.vue'
 import ResultScreen from './screens/ResultScreen.vue'
 import TimeSelectScreen from './screens/TimeSelectScreen.vue'
 import { useGameState } from './composables/useGameState'

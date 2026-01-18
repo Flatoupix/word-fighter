@@ -1,15 +1,12 @@
 <template>
-  <section
-    class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm sm:p-4 md:max-w-[40vw]"
+  <ScreenShell
+    title="Résultat"
+    :showBack="true"
+    paddingClass="p-3 sm:p-4"
+    maxWidthClass="md:max-w-[40vw]"
+    titleClass="text-2xl sm:text-3xl tracking-normal"
+    @back="$emit('back')"
   >
-    <button
-      type="button"
-      class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
-      @click="$emit('back')"
-    >
-      ← Back
-    </button>
-    <h2 class="text-center font-display text-2xl text-neon-yellow sm:text-3xl">Résultat</h2>
     <div class="mt-4 text-center">
       <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Gagnant</div>
       <div :class="['font-display text-3xl sm:text-4xl', winnerClass || 'text-neon-purple']">
@@ -44,17 +41,16 @@
         <div class="font-numbers text-2xl text-neon-yellow sm:text-3xl">{{ computerScore }}</div>
       </div>
     </div>
-    <button
-      type="button"
-      class="mt-6 w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-3 text-center transition hover:border-neon-purple/80 hover:bg-black/40 sm:py-4"
-      @click="$emit('restart')"
-    >
+    <PrimaryButton class="mt-6 sm:py-4" @click="$emit('restart')">
       <span class="font-display text-xl text-neon-yellow sm:text-2xl">Rejouer</span>
-    </button>
-  </section>
+    </PrimaryButton>
+  </ScreenShell>
 </template>
 
 <script setup>
+import PrimaryButton from '../components/ui/PrimaryButton.vue'
+import ScreenShell from '../components/ui/ScreenShell.vue'
+
 defineProps({
   winnerLabel: {
     type: String,

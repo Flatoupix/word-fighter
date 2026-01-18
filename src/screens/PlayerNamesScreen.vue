@@ -1,13 +1,11 @@
 <template>
-  <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 backdrop-blur-sm sm:p-4 md:max-w-[33vw]">
-    <button
-      type="button"
-      class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
-      @click="$emit('back')"
-    >
-      ← Back
-    </button>
-    <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">Nom du joueur</h2>
+  <ScreenShell
+    title="Nom du joueur"
+    :showBack="true"
+    paddingClass="p-3 sm:p-4"
+    maxWidthClass="md:max-w-[33vw]"
+    @back="$emit('back')"
+  >
     <div class="mt-4">
       <label class="text-[9px] font-ui uppercase tracking-wide text-neon-yellow/50 sm:text-[10px]">
         {{ stepLabel }}
@@ -20,18 +18,16 @@
         @keydown.enter.prevent="onConfirm"
       />
     </div>
-    <button
-      type="button"
-      class="mt-5 w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-3 text-center transition hover:border-neon-purple/80 hover:bg-black/40"
-      @click="onConfirm"
-    >
+    <PrimaryButton class="mt-5" @click="onConfirm">
       <span class="font-display text-lg text-neon-yellow sm:text-xl">{{ buttonLabel }}</span>
-    </button>
-  </section>
+    </PrimaryButton>
+  </ScreenShell>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import PrimaryButton from '../components/ui/PrimaryButton.vue'
+import ScreenShell from '../components/ui/ScreenShell.vue'
 
 const props = defineProps({
   playerOneName: {

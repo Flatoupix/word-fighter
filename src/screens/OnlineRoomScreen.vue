@@ -1,16 +1,5 @@
 <template>
-  <section class="mx-auto w-full rounded-md border border-neon-pink/70 bg-black/40 p-3 py-6 backdrop-blur-sm sm:p-4 md:max-w-[36rem]">
-    <button
-      type="button"
-      class="inline-flex items-center gap-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/60 hover:text-neon-yellow"
-      @click="$emit('back')"
-    >
-      ← Back
-    </button>
-
-    <h2 class="text-center font-display text-xl tracking-wide text-neon-yellow sm:text-2xl">
-      {{ titleLabel }}
-    </h2>
+  <ScreenShell :title="titleLabel" :showBack="true" maxWidthClass="md:max-w-[36rem]" @back="$emit('back')">
 
     <p v-if="!supabaseReady" class="mt-3 text-center text-xs text-neon-yellow/70">
       Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable online mode.
@@ -18,14 +7,9 @@
 
     <template v-else>
       <div v-if="step === 'landing'" class="mt-4 space-y-4">
-        <button
-          v-if="showCreate"
-          type="button"
-          class="w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-3 text-center transition hover:border-neon-purple/80 hover:bg-black/40"
-          @click="createRoom"
-        >
+        <PrimaryButton v-if="showCreate" @click="createRoom">
           <span class="font-display text-xl text-neon-yellow">Create room</span>
-        </button>
+        </PrimaryButton>
         <div v-if="showJoin" class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
           <label class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Join with code</label>
           <div class="mt-2 flex items-center gap-2">
@@ -64,14 +48,9 @@
             @keydown.enter.prevent="joinRoom"
           />
         </div>
-        <button
-          type="button"
-          class="w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-3 text-center transition hover:border-neon-purple/80 hover:bg-black/40 disabled:cursor-not-allowed disabled:opacity-60"
-          :disabled="!canJoin"
-          @click="joinRoom"
-        >
+        <PrimaryButton :disabled="!canJoin" @click="joinRoom">
           <span class="font-display text-xl text-neon-yellow">{{ isBusy ? 'Joining...' : 'Enter lobby' }}</span>
-        </button>
+        </PrimaryButton>
         <p v-if="errorMessage" class="text-xs text-neon-orange">{{ errorMessage }}</p>
       </div>
 
@@ -115,23 +94,19 @@
           </div>
         </div>
 
-        <button
-          v-if="isHost"
-          type="button"
-          class="w-full rounded-md border border-neon-pink/70 bg-black/30 px-4 py-3 text-center transition hover:border-neon-purple/80 hover:bg-black/40"
-          :disabled="players.length === 0"
-          @click="startRoom"
-        >
+        <PrimaryButton v-if="isHost" :disabled="players.length === 0" @click="startRoom">
           <span class="font-display text-xl text-neon-yellow">Start</span>
-        </button>
+        </PrimaryButton>
         <div v-else class="text-center text-xs text-neon-yellow/70">Waiting for host to start…</div>
       </div>
     </template>
-  </section>
+  </ScreenShell>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import PrimaryButton from '../components/ui/PrimaryButton.vue'
+import ScreenShell from '../components/ui/ScreenShell.vue'
 import { supabase } from '../lib/supabaseClient'
 import { generateRoomCode } from '../lib/roomCode'
 
