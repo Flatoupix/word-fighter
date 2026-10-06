@@ -1,6 +1,6 @@
 <template>
   <ScreenShell
-    :title="isVictory ? 'VICTOIRE ! 🏆' : isTie ? 'ÉGALITÉ ! ⚔️' : isSolo ? 'CHRONO TERMINÉ ! ⏱️' : 'DÉFAITE FACE À L\'IA 👾'"
+    :title="titleText"
     :showBack="false"
     maxWidthClass="md:max-w-[32rem]"
     titleClass="text-2xl sm:text-4xl text-neon-yellow drop-shadow-[0_0_15px_rgba(255,211,25,0.6)]"
@@ -8,14 +8,18 @@
     <!-- New Record Alert -->
     <div
       v-if="isNewRecord"
-      class="mt-3 rounded-full border border-neon-yellow bg-neon-yellow/20 py-1 text-center font-display text-sm uppercase tracking-widest text-neon-yellow shadow-[0_0_15px_rgba(255,211,25,0.4)] animate-pulse"
+      class="mt-3 flex items-center justify-center gap-2 rounded-full border border-neon-yellow bg-neon-yellow/20 py-1 text-center font-display text-sm uppercase tracking-widest text-neon-yellow shadow-[0_0_15px_rgba(255,211,25,0.4)] animate-pulse"
     >
-      🎉 NOUVEAU RECORD PERSONNEL !
+      <CyberIcon name="trophy" sizeClass="w-4 h-4 text-neon-yellow" />
+      <span>NOUVEAU RECORD PERSONNEL !</span>
     </div>
 
     <!-- Match Outcome Hero -->
     <div class="mt-4 flex flex-col items-center justify-center rounded-lg border border-neon-pink/60 bg-black/50 p-4 text-center">
-      <div class="text-[10px] font-ui uppercase tracking-widest text-neon-yellow/50">Score Final</div>
+      <div class="flex items-center gap-2 text-[10px] font-ui uppercase tracking-widest text-neon-yellow/50">
+        <CyberIcon :name="outcomeIcon" sizeClass="w-3.5 h-3.5" />
+        <span>{{ outcomeSubtitle }}</span>
+      </div>
       <div class="mt-1 font-numbers text-5xl font-bold text-neon-yellow drop-shadow-[0_0_20px_rgba(255,211,25,0.8)] sm:text-6xl">
         {{ playerScore }}
       </div>
@@ -44,10 +48,11 @@
     <div class="mt-6 flex flex-col gap-3 sm:flex-row">
       <button
         type="button"
-        class="flex-1 rounded-lg border-2 border-neon-yellow bg-gradient-to-r from-neon-pink via-neon-purple to-neon-orange py-3 font-display text-xl text-neon-yellow shadow-[0_0_15px_rgba(255,211,25,0.5)] transition hover:scale-[1.02] active:scale-[0.98]"
+        class="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-neon-yellow bg-gradient-to-r from-neon-pink via-neon-purple to-neon-orange py-3 font-display text-xl text-neon-yellow shadow-[0_0_15px_rgba(255,211,25,0.5)] transition hover:scale-[1.02] active:scale-[0.98]"
         @click="$emit('rematch')"
       >
-        REJOUER (Entrée) ⚡
+        <span>REJOUER (Entrée)</span>
+        <CyberIcon name="arrow-enter" sizeClass="w-5 h-5 text-neon-yellow" />
       </button>
       <button
         type="button"
@@ -63,6 +68,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue'
 import ScreenShell from '../components/ui/ScreenShell.vue'
+import CyberIcon from '../components/ui/CyberIcon.vue'
 
 const props = defineProps({
   playerScore: { type: Number, required: true },
@@ -80,6 +86,27 @@ const emit = defineEmits(['rematch', 'restart'])
 
 const isVictory = computed(() => !props.isSolo && props.playerScore > props.computerScore)
 const isTie = computed(() => !props.isSolo && props.playerScore === props.computerScore)
+
+const titleText = computed(() => {
+  if (props.isSolo) return 'CHRONO TERMINÉ !'
+  if (isVictory.value) return 'VICTOIRE !'
+  if (isTie.value) return 'ÉGALITÉ !'
+  return "DÉFAITE FACE À L'IA"
+})
+
+const outcomeIcon = computed(() => {
+  if (props.isSolo) return 'clock'
+  if (isVictory.value) return 'trophy'
+  if (isTie.value) return 'swords'
+  return 'defeat'
+})
+
+const outcomeSubtitle = computed(() => {
+  if (props.isSolo) return 'Score Final Solo'
+  if (isVictory.value) return 'Victoire Confirmée'
+  if (isTie.value) return 'Match Nul'
+  return 'Combat Perdu'
+})
 
 const handleKeyDown = (e) => {
   if (e.key === 'Enter' || e.key === ' ') {

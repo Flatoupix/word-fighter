@@ -39,21 +39,21 @@
     "novice": {
       "name": "Glitch-01",
       "title": "IA Débutante",
-      "avatar": "👾",
+      "avatarId": "glitch",
       "desc": "Idéal pour s'entraîner. Réflexion posée.",
       "quote": "Calcul de début de partie..."
     },
     "medium": {
       "name": "Neo-Hacker",
       "title": "IA Cyber-Punk",
-      "avatar": "⚡",
+      "avatarId": "hacker",
       "desc": "Rythme soutenu et sens de la répartie.",
       "quote": "Tes lettres ne me font pas peur !"
     },
     "expert": {
       "name": "Cyber-Titan",
       "title": "IA Maître",
-      "avatar": "🤖",
+      "avatarId": "titan",
       "desc": "Vitesse d'exécution et combos impitoyables.",
       "quote": "L'IA ne fait aucun compromis."
     }
@@ -88,6 +88,14 @@
   },
   "changelog": [
     {
+      "version": "0.7.1",
+      "items": [
+        "Suppression totale des émojis au profit d'icônes vectorielles SVG sur-mesure et de portraits de robots stylisés.",
+        "Refonte complète de la synthèse audio Web Audio avec filtres DSP passe-bas résonants et overdrive analogique.",
+        "Suppression des anciens fichiers audio pour une identité sonore cyberpunk exclusive."
+      ]
+    },
+    {
       "version": "0.7.0",
       "items": [
         "Peau neuve arcade : interface repensée, centrée sur le Solo Rush et le Cyber Duel contre l'IA.",
@@ -98,16 +106,6 @@
         "Focus automatique permanent sur le champ de saisie.",
         "3 personnalités d'IA (Glitch-01, Neo-Hacker, Cyber-Titan) avec citations et rythmes dédiés.",
         "Sauvegarde des records et statistiques en local (High Score, mots joués, combos max)."
-      ]
-    },
-    {
-      "version": "0.6.0",
-      "items": [
-        "Correction des retours arrières défectueux.",
-        "Harmonisation de la langue et traduction complète.",
-        "Uniformisation des largeurs de fenêtres.",
-        "Indicateurs de bonus Anagramme et Double-lettre.",
-        "Revanche directe depuis l'écran de fin."
       ]
     }
   ]

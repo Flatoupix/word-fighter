@@ -1,5 +1,11 @@
 # Changelog
  
+## 0.7.1
+
+- Replace all emojis with custom handcrafted SVG icons, cyber runes, and vector AI portraits.
+- Redesign the Web Audio synthesizer with DSP lowpass filter sweeps, waveshaper distortion, and FM metallic timbres.
+- Remove legacy audio samples in favor of the unified cyberpunk audio DSP engine.
+
 ## 0.7.0
 
 - Complete arcade overhaul: streamlined focus on Solo Rush and Cyber Duel (VS AI) modes.

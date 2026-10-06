@@ -8,9 +8,10 @@
     <!-- Fever Mode Banner -->
     <div
       v-if="feverActive"
-      class="absolute top-2 left-1/2 -translate-x-1/2 rounded-full border border-neon-magenta bg-neon-magenta/20 px-3 py-0.5 text-[10px] font-ui uppercase tracking-widest text-neon-magenta font-bold animate-pulse"
+      class="absolute top-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border border-neon-magenta bg-neon-magenta/20 px-3 py-0.5 text-[10px] font-ui uppercase tracking-widest text-neon-magenta font-bold animate-pulse"
     >
-      🔥 FEVER MODE ACTIVE (POINTS MULTIPLIÉS)
+      <CyberIcon name="flame" sizeClass="w-3.5 h-3.5 text-neon-magenta" />
+      <span>FEVER MODE ACTIVE (POINTS MULTIPLIÉS)</span>
     </div>
 
     <!-- Floating Combat Text Container -->
@@ -63,6 +64,8 @@
 </template>
 
 <script setup>
+import CyberIcon from '../ui/CyberIcon.vue'
+
 defineProps({
   wrongWord: {
     type: Boolean,

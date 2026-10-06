@@ -24,7 +24,7 @@
             :title="isMuted ? 'Activer le son' : 'Couper le son'"
             @click="toggleSound"
           >
-            <span>{{ isMuted ? '🔇' : '🔊' }}</span>
+            <CyberIcon :name="isMuted ? 'sound-off' : 'sound-on'" sizeClass="w-3.5 h-3.5" />
             <span class="hidden sm:inline">{{ isMuted ? 'Muet' : 'Son On' }}</span>
           </button>
 
@@ -100,10 +100,11 @@
           </div>
           <button
             type="button"
-            class="text-neon-pink/70 hover:text-neon-pink hover:underline"
+            class="inline-flex items-center gap-1.5 text-neon-pink/70 hover:text-neon-pink hover:underline"
             @click="handleQuitGame"
           >
-            Abandonner le match ✕
+            <CyberIcon name="cross" sizeClass="w-3 h-3" />
+            <span>Abandonner le match</span>
           </button>
         </div>
       </main>
@@ -129,10 +130,11 @@
           </h2>
           <button
             type="button"
-            class="rounded bg-black/40 px-2 py-1 text-xs font-ui uppercase tracking-wide text-neon-yellow/70 hover:text-neon-yellow"
+            class="inline-flex items-center gap-1 rounded bg-black/40 px-2 py-1 text-xs font-ui uppercase tracking-wide text-neon-yellow/70 hover:text-neon-yellow"
             @click="closeOverlay"
           >
-            {{ uiText.overlay.close }} ✕
+            <span>{{ uiText.overlay.close }}</span>
+            <CyberIcon name="cross" sizeClass="w-3 h-3" />
           </button>
         </div>
 
@@ -177,6 +179,7 @@ import ArcadeMenuScreen from './screens/ArcadeMenuScreen.vue'
 import ResultScreen from './screens/ResultScreen.vue'
 import MainBoard from './components/game/MainBoard.vue'
 import ScoreBoard from './components/game/ScoreBoard.vue'
+import CyberIcon from './components/ui/CyberIcon.vue'
 import { useGameState } from './composables/useGameState'
 import { GAME_VERSION } from './config/constants'
 import { getStats, saveStats } from './lib/storage'

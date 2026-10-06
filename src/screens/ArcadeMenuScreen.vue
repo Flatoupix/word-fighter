@@ -26,7 +26,7 @@
         ]"
         @click="selectMode('solo')"
       >
-        <span class="text-3xl sm:text-4xl">⚡</span>
+        <CyberIcon name="solo" sizeClass="w-9 h-9 text-neon-yellow" />
         <span class="mt-2 font-display text-xl text-neon-yellow sm:text-2xl">Solo Rush</span>
         <span class="mt-1 font-ui text-[11px] text-neon-yellow/60 sm:text-xs">
           Face au chrono. Explose ton record.
@@ -49,7 +49,7 @@
         ]"
         @click="selectMode('pvc')"
       >
-        <span class="text-3xl sm:text-4xl">🤖</span>
+        <CyberIcon name="duel" sizeClass="w-9 h-9 text-neon-purple" />
         <span class="mt-2 font-display text-xl text-neon-yellow sm:text-2xl">Cyber Duel</span>
         <span class="mt-1 font-ui text-[11px] text-neon-yellow/60 sm:text-xs">
           Tour par tour contre l'ordinateur.
@@ -79,7 +79,7 @@
           ]"
           @click="selectedAi = key"
         >
-          <span class="text-2xl">{{ ai.avatar }}</span>
+          <AiAvatar :avatarId="ai.avatarId" sizeClass="w-8 h-8" />
           <span class="mt-1 font-display text-sm sm:text-base">{{ ai.name }}</span>
           <span class="text-[9px] font-ui text-neon-yellow/50">{{ ai.title }}</span>
         </button>
@@ -138,7 +138,8 @@
       @click="onStart"
     >
       <span class="relative z-10 flex items-center justify-center gap-2 font-display text-2xl tracking-wider text-neon-yellow sm:text-3xl">
-        ENTRER DANS L'ARÈNE ⚡
+        ENTRER DANS L'ARÈNE
+        <CyberIcon name="target" sizeClass="w-6 h-6 text-neon-yellow" />
       </span>
       <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"></div>
     </button>
@@ -150,6 +151,8 @@ import { ref } from 'vue'
 import { GAME_VERSION } from '../config/constants'
 import { getStats } from '../lib/storage'
 import uiText from '../content/uiText.json'
+import CyberIcon from '../components/ui/CyberIcon.vue'
+import AiAvatar from '../components/ui/AiAvatar.vue'
 
 const version = GAME_VERSION
 const stats = ref(getStats())

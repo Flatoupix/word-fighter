@@ -27,8 +27,9 @@
         >
           {{ formattedTime }}
         </div>
-        <div v-if="comboStreak > 1" class="text-[9px] font-ui text-neon-cyan uppercase">
-          Série : {{ comboStreak }} 🔥
+        <div v-if="comboStreak > 1" class="flex items-center gap-1 text-[9px] font-ui text-neon-cyan uppercase">
+          <span>Série : {{ comboStreak }}</span>
+          <CyberIcon name="flame" sizeClass="w-3 h-3 text-neon-orange" />
         </div>
       </div>
 
@@ -41,7 +42,7 @@
         <template v-else>
           <div class="flex items-center gap-1.5">
             <span class="font-display text-sm text-neon-purple sm:text-lg">{{ opponentLabel }}</span>
-            <span class="text-base sm:text-xl">{{ aiAvatar }}</span>
+            <AiAvatar :avatarId="aiAvatar" sizeClass="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <span class="font-numbers text-2xl font-bold text-neon-purple sm:text-4xl">{{ comPoints }}</span>
           <div v-if="aiStatus" class="max-w-[8rem] truncate text-[9px] font-ui text-neon-purple/80 sm:max-w-none">
@@ -76,11 +77,12 @@
         <button
           v-if="wordInput"
           type="button"
-          class="absolute right-3 rounded bg-neon-yellow/20 px-3 py-1 font-display text-xs text-neon-yellow transition hover:bg-neon-yellow/40 active:scale-95 sm:text-sm"
+          class="absolute right-3 flex items-center gap-1.5 rounded bg-neon-yellow/20 px-3 py-1 font-display text-xs text-neon-yellow transition hover:bg-neon-yellow/40 active:scale-95 sm:text-sm"
           :disabled="disabled"
           @click="$emit('submit')"
         >
-          Valider ↵
+          <span>Valider</span>
+          <CyberIcon name="arrow-enter" sizeClass="w-3.5 h-3.5 text-neon-yellow" />
         </button>
       </div>
 
@@ -92,13 +94,15 @@
             v-if="liveAnalysis.valid"
             class="inline-flex items-center gap-1 rounded bg-neon-green/20 px-2 py-0.5 text-[10px] font-bold text-neon-green border border-neon-green/40"
           >
-            ✓ MOT VALIDE (+{{ liveAnalysis.points }} pts)
+            <CyberIcon name="check" sizeClass="w-3 h-3 text-neon-green" />
+            <span>MOT VALIDE (+{{ liveAnalysis.points }} pts)</span>
           </span>
           <span
             v-else-if="liveAnalysis.duplicate"
             class="inline-flex items-center gap-1 rounded bg-neon-pink/20 px-2 py-0.5 text-[10px] font-bold text-neon-pink border border-neon-pink/40"
           >
-            ✕ DÉJÀ JOUÉ
+            <CyberIcon name="cross" sizeClass="w-3 h-3 text-neon-pink" />
+            <span>DÉJÀ JOUÉ</span>
           </span>
           <span
             v-else-if="wordInput.length >= 2"
@@ -110,27 +114,31 @@
           <!-- Detected Bonus Badges in Real-Time -->
           <span
             v-if="liveAnalysis.palindrome"
-            class="rounded bg-neon-yellow/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-yellow border border-neon-yellow/50 animate-bounce"
+            class="inline-flex items-center gap-1 rounded bg-neon-yellow/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-yellow border border-neon-yellow/50 animate-bounce"
           >
-            ✨ PALINDROME (+10)
+            <CyberIcon name="palindrome" sizeClass="w-3 h-3 text-neon-yellow" />
+            <span>PALINDROME (+10)</span>
           </span>
           <span
             v-if="liveAnalysis.anagram"
-            class="rounded bg-neon-purple/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-purple border border-neon-purple/50"
+            class="inline-flex items-center gap-1 rounded bg-neon-purple/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-purple border border-neon-purple/50"
           >
-            🔄 ANAGRAMME (+5)
+            <CyberIcon name="anagram" sizeClass="w-3 h-3 text-neon-purple" />
+            <span>ANAGRAMME (+5)</span>
           </span>
           <span
             v-if="liveAnalysis.superSuite"
-            class="rounded bg-neon-cyan/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-cyan border border-neon-cyan/50"
+            class="inline-flex items-center gap-1 rounded bg-neon-cyan/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-cyan border border-neon-cyan/50"
           >
-            ⚡ SUPER SUITE
+            <CyberIcon name="suite" sizeClass="w-3 h-3 text-neon-cyan" />
+            <span>SUPER SUITE</span>
           </span>
           <span
             v-if="liveAnalysis.superShrink"
-            class="rounded bg-neon-orange/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-orange border border-neon-orange/50"
+            class="inline-flex items-center gap-1 rounded bg-neon-orange/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-orange border border-neon-orange/50"
           >
-            📐 SUPER SHRINK
+            <CyberIcon name="shrink" sizeClass="w-3 h-3 text-neon-orange" />
+            <span>SUPER SHRINK</span>
           </span>
         </div>
 
@@ -147,6 +155,8 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { sounds } from '../../lib/soundFx'
+import CyberIcon from '../ui/CyberIcon.vue'
+import AiAvatar from '../ui/AiAvatar.vue'
 
 const props = defineProps({
   playerPoints: { type: Number, required: true },
@@ -161,7 +171,7 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   isSolo: { type: Boolean, default: false },
   highScore: { type: Number, default: 0 },
-  aiAvatar: { type: String, default: '🤖' },
+  aiAvatar: { type: String, default: 'glitch' },
   aiStatus: { type: String, default: '' },
   comboStreak: { type: Number, default: 0 },
   comboMultiplier: { type: Number, default: 1 },
