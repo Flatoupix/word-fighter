@@ -1,5 +1,16 @@
 # Changelog
  
+## 0.7.0
+
+- Complete arcade overhaul: streamlined focus on Solo Rush and Cyber Duel (VS AI) modes.
+- Built-in Web Audio API sound synthesizer with interactive mechanical typing, chords, fanfares and mute toggle.
+- Added major game juice: floating combat text popups (+points, bonus tags), screen impact shakes and neon pulses.
+- Added dynamic Combo & Fever multiplier system (up to x2 multiplier on score streaks).
+- Added live word analysis and preview under the input field (real-time points, palindrome and anagram alerts).
+- Added permanent auto-focus on input field to eliminate mouse interruptions during intense play.
+- Introduced 3 AI personalities (Glitch-01, Neo-Hacker, Cyber-Titan) with custom avatars and response paces.
+- Added persistent local stats and high scores tracking in localStorage.
+
 ## 0.6.0
 
 - Fix broken back navigation in GameTypeSelectScreen and ReadyScreen.

@@ -1,19 +1,14 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import scrabble from '../assets/words/scrabble.json'
-import wooshUrl from '../assets/audio/woosh.mp3'
-import failUrl from '../assets/audio/fail.mp3'
-import minusUrl from '../assets/audio/minus.mp3'
 import { formatFrequency, normalizeWord, pickWeightedWord, resolveEntry } from './useDictionary'
+import { sounds } from '../lib/soundFx'
 
 const letters = 'abcdefghijklmnopqrstuvwxyz'
 const objectLetters = scrabble.letters
 
 export const useGameState = ({
   modeRef = ref('pvc'),
-  gameTypeRef = ref('word-fight'),
-  grammarTagRef = ref(''),
-  onlinePlayerIdRef = ref(''),
-  turnActiveRef = ref(true),
+  aiDifficultyRef = ref('medium'),
   onFailPenalty = () => {},
 } = {}) => {
   const wordInput = ref('')
@@ -22,7 +17,7 @@ export const useGameState = ({
   const refWord = ref('')
   const isTyping = ref(false)
   const wordPlayed = ref('')
-  const computerTurn = ref(true)
+  const computerTurn = ref(false)
   const index = ref(0)
   const wrongWord = ref(false)
   const gameActive = ref(false)
@@ -33,6 +28,13 @@ export const useGameState = ({
   const ignoreNextPrefix = ref(false)
   let speedTimerId = null
 
+  // Arcade Juice States
+  const comboStreak = ref(0)
+  const combatPopups = ref([])
+  const triggerShake = ref(false)
+  const aiThinking = ref(false)
+  const aiStatus = ref('En veille')
+
   const playerPoints = ref(0)
   const comPoints = ref(0)
   const calcPoints = ref(0)
@@ -42,6 +44,14 @@ export const useGameState = ({
   const doubleLetterBonus = ref(0)
   const pointsAdded = ref([])
 
+  const comboMultiplier = computed(() => {
+    if (comboStreak.value >= 5) return 2.0
+    if (comboStreak.value >= 3) return 1.5
+    return 1.0
+  })
+
+  const feverActive = computed(() => comboStreak.value >= 3)
+
   const wordChars = computed(() => wordPlayed.value.split(''))
 
   const dynamicFontSize = computed(() => {
@@ -49,42 +59,48 @@ export const useGameState = ({
       const multiplier = (wordPlayed.value.length - 12) * 0.2
       const defaultSize = 3
       const finalSize = defaultSize - multiplier
-      return `${finalSize}em`
+      return `${Math.max(1.8, finalSize)}em`
     }
     return '3em'
   })
 
   const isSoloMode = computed(() => modeRef.value === 'solo')
   const isVsComputer = computed(() => modeRef.value === 'pvc')
-  const isOnlineMode = computed(() => modeRef.value === 'online')
-  const isGrammarWar = computed(() => gameTypeRef.value === 'grammar-war')
-  const isKamoulox = computed(() => gameTypeRef.value === 'kamoulox')
-  let remoteTypeTimer = null
+
+  const fireShake = () => {
+    triggerShake.value = true
+    setTimeout(() => {
+      triggerShake.value = false
+    }, 360)
+  }
+
+  const addCombatPopup = (text, tag = '', color = 'text-neon-yellow') => {
+    const id = Date.now() + Math.random()
+    combatPopups.value.push({ id, text, tag, color })
+    setTimeout(() => {
+      combatPopups.value = combatPopups.value.filter((p) => p.id !== id)
+    }, 1200)
+  }
 
   const wordFail = () => {
-    playAtDuring(failUrl)
+    sounds.playFail()
+    fireShake()
     onFailPenalty()
-    const owner = isOnlineMode.value
-      ? 'player'
-      : isSoloMode.value
-        ? 'player'
-        : isVsComputer.value
-          ? computerTurn.value
-            ? 'computer'
-            : 'player'
-          : computerTurn.value
-            ? 'player2'
-            : 'player1'
+    comboStreak.value = 0 // Break combo streak
+
+    const owner = isSoloMode.value ? 'player' : computerTurn.value ? 'computer' : 'player'
     wordListDisp.value.push({
       index: wordListDisp.value.length,
       text: 'FAIL',
       normalized: '',
-      description: 'Mot invalide',
+      description: 'Mot invalide / Pénalité -1s',
       visible: false,
       owner,
       tags: [],
     })
     wrongWord.value = true
+    addCombatPopup('FAIL ! -1s', 'ERREUR', 'text-neon-pink')
+
     if (speedTimerId) {
       clearInterval(speedTimerId)
       speedTimerId = null
@@ -94,6 +110,7 @@ export const useGameState = ({
     prefixRepeatLength.value = 0
     frequencyBonus.value = 0
     ignoreNextPrefix.value = true
+
     setTimeout(() => {
       wrongWord.value = false
       wordPlayed.value = ''
@@ -105,10 +122,9 @@ export const useGameState = ({
       wordInput.value = ''
       pointsAdded.value = []
       isTyping.value = false
+
       if (gameActive.value) {
-        if (isOnlineMode.value) {
-          computerTurn.value = false
-        } else if (isSoloMode.value) {
+        if (isSoloMode.value) {
           computerTurn.value = false
         } else if (computerTurn.value) {
           computerTurn.value = false
@@ -119,22 +135,7 @@ export const useGameState = ({
           }
         }
       }
-    }, 500)
-  }
-
-  const playAtDuring = (audio, at, during) => {
-    const audioPlay = new Audio(audio)
-
-    if (at !== undefined) {
-      audioPlay.currentTime = at
-    }
-    audioPlay.play()
-
-    if (during !== undefined) {
-      setTimeout(() => {
-        audioPlay.pause()
-      }, during)
-    }
+    }, 450)
   }
 
   const isGreaterOrTinierWord = (firstWord, secondWord) => {
@@ -146,10 +147,11 @@ export const useGameState = ({
           superShrinkBonus.value *= 2
           calcPoints.value += superShrinkBonus.value
         }
-      } else {
-        superShrinkBonus.value = 0
+        return true
       }
+      superShrinkBonus.value = 0
     }
+    return false
   }
 
   const addPoint = (currentLetter, forcedPoints = null) => {
@@ -157,35 +159,30 @@ export const useGameState = ({
     if (!letter) {
       return
     }
-
     const points = forcedPoints === null ? letter.points : forcedPoints
     pointsAdded.value.push(points)
     calcPoints.value += points
     setTimeout(() => {
       pointsAdded.value.shift()
-    }, 3000)
+    }, 2000)
   }
 
   const addBonusPoints = (points) => {
-    if (!points) {
-      return
-    }
+    if (!points) return
     pointsAdded.value.push(points)
     setTimeout(() => {
       pointsAdded.value.shift()
-    }, 3000)
+    }, 2000)
   }
 
   const isAdjacentLetter = (firstWord, secondWord) => {
     if (wordList.value.length > 1) {
       const firstIndex = letters.indexOf(firstWord[0])
       const secondIndex = letters.indexOf(secondWord[0])
-
       if (firstIndex === -1 || secondIndex === -1) {
         superSuiteBonus.value = 0
         return false
       }
-
       if (firstIndex + 1 === secondIndex || firstIndex - 1 === secondIndex) {
         if (superSuiteBonus.value === 0) {
           superSuiteBonus.value = 5
@@ -195,7 +192,6 @@ export const useGameState = ({
         }
         return true
       }
-
       superSuiteBonus.value = 0
     }
     return false
@@ -203,7 +199,7 @@ export const useGameState = ({
 
   const isPalindrome = (word) => {
     const normalized = normalizeWord(word)
-    if (normalized.split('').reverse().join('') === normalized) {
+    if (normalized.length >= 2 && normalized.split('').reverse().join('') === normalized) {
       return 10
     }
     return 0
@@ -222,23 +218,24 @@ export const useGameState = ({
   }
 
   const scoreValue = computed(() => totalLetters(wordPlayed.value))
+
   const computeFrequencyBonus = (freqForm, freqLemma) => {
     const form = Number(freqForm) || 0
     const lemma = Number(freqLemma) || 0
     const value = form > 0 ? form : lemma
-    if (value <= 0) {
-      return 0
-    }
+    if (value <= 0) return 0
     const bonus = Math.round(Math.log10(value + 1) * 4)
     return Math.min(10, bonus)
   }
+
   const speedBonus = computed(() => {
-    const maxTime = 5
+    const maxTime = 4
     const maxBonus = 10
     const capped = Math.min(speedElapsed.value, maxTime)
     const ratio = 1 - capped / maxTime
     return Math.max(0, Math.round(maxBonus * ratio))
   })
+
   const scoreFontSize = computed(() => {
     const baseSize = 1.25
     const maxSize = 2.4
@@ -247,6 +244,7 @@ export const useGameState = ({
     const size = baseSize + ratio * (maxSize - baseSize)
     return `${size}rem`
   })
+
   const palindromeActive = computed(
     () => isPalindrome(wordPlayed.value) > 5 && wordPlayed.value !== '' && !isTyping.value
   )
@@ -254,58 +252,53 @@ export const useGameState = ({
   const howManyLettersBetween = (firstWord, secondWord) => {
     const firstIndex = letters.indexOf(firstWord[0])
     const secondIndex = letters.indexOf(secondWord[0])
-    if (firstIndex === -1 || secondIndex === -1) {
-      return 0
-    }
+    if (firstIndex === -1 || secondIndex === -1) return 0
     return Math.abs(firstIndex - secondIndex)
   }
 
   const isAnagram = (firstWord, secondWord) => {
     const normalizedFirst = normalizeWord(firstWord || '')
     const normalizedSecond = normalizeWord(secondWord || '')
-    if (!normalizedFirst || !normalizedSecond) {
-      return false
-    }
-    if (normalizedFirst === normalizedSecond) {
-      return false
-    }
-    if (normalizedFirst.length !== normalizedSecond.length) {
-      return false
-    }
-    const sortedFirst = normalizedFirst.split('').sort().join('')
-    const sortedSecond = normalizedSecond.split('').sort().join('')
-    return sortedFirst === sortedSecond
+    if (!normalizedFirst || !normalizedSecond || normalizedFirst === normalizedSecond) return false
+    if (normalizedFirst.length !== normalizedSecond.length) return false
+    return normalizedFirst.split('').sort().join('') === normalizedSecond.split('').sort().join('')
   }
 
   const countDoubleLetters = (word) => {
     const normalized = normalizeWord(word || '')
-    if (!normalized) {
-      return 0
-    }
+    if (!normalized) return 0
     let count = 0
     for (let i = 1; i < normalized.length; i += 1) {
-      if (normalized[i] === normalized[i - 1]) {
-        count += 1
-      }
+      if (normalized[i] === normalized[i - 1]) count += 1
     }
     return count
   }
 
-  const pointsCount = () => {
+  const pointsCount = (isPlayerWord = true) => {
     const currentWord = wordList.value[wordList.value.length - 1] || ''
+    const detectedTags = []
+
     if (wordList.value.length > 1) {
       const lastIndex = wordList.value.length - 1
       const prevIndex = lastIndex - 1
       const lastWord = wordList.value[lastIndex]
       const prevWord = wordList.value[prevIndex]
-      calcPoints.value += howManyLettersBetween(lastWord, prevWord)
-      isAdjacentLetter(lastWord, prevWord)
-      isGreaterOrTinierWord(lastWord, prevWord)
+
+      const gap = howManyLettersBetween(lastWord, prevWord)
+      if (gap > 0) calcPoints.value += gap
+
+      if (isAdjacentLetter(lastWord, prevWord)) {
+        detectedTags.push('SUPER SUITE')
+      }
+      if (isGreaterOrTinierWord(lastWord, prevWord)) {
+        detectedTags.push('SUPER SHRINK')
+      }
       if (isAnagram(prevWord, lastWord)) {
         const bonus = 5
         anagramBonus.value = bonus
         calcPoints.value += bonus
         addBonusPoints(bonus)
+        detectedTags.push('ANAGRAMME +5')
       } else {
         anagramBonus.value = 0
       }
@@ -319,56 +312,56 @@ export const useGameState = ({
       doubleLetterBonus.value = bonus
       calcPoints.value += bonus
       addBonusPoints(bonus)
+      detectedTags.push(`DOUBLE LETTRE +${bonus}`)
     } else {
       doubleLetterBonus.value = 0
     }
 
-    calcPoints.value += isPalindrome(wordPlayed.value)
+    const palPoints = isPalindrome(wordPlayed.value)
+    if (palPoints > 0) {
+      calcPoints.value += palPoints
+      detectedTags.push('PALINDROME +10')
+    }
+
     if (speedBonusAwarded.value > 0) {
       calcPoints.value += speedBonusAwarded.value
+      detectedTags.push(`SPEED +${speedBonusAwarded.value}`)
       speedBonusAwarded.value = 0
     }
+
     if (frequencyBonus.value > 0) {
       calcPoints.value += frequencyBonus.value
       frequencyBonus.value = 0
     }
-    if (isKamoulox.value) {
-      const current = wordListDisp.value[wordListDisp.value.length - 1]
-      const previous = wordListDisp.value[wordListDisp.value.length - 2]
-      if (current && previous) {
-        const currentTags = current.tags || []
-        const previousTags = previous.tags || []
-        const lengthDiff = Math.abs(current.text.length - previous.text.length)
-        const hasTagOverlap = currentTags.some((tag) => previousTags.includes(tag))
-        const lemmaDiff =
-          (current.normalized || normalizeWord(current.text)) !==
-          (previous.normalized || normalizeWord(previous.text))
-        let bonus = 0
-        if (currentTags.length && previousTags.length && !hasTagOverlap) {
-          bonus += 1
-        }
-        if (lengthDiff >= 2) {
-          bonus += 1
-        }
-        if (lemmaDiff) {
-          bonus += 1
-        }
-        if (lengthDiff >= 4 && bonus > 0) {
-          bonus *= 2
-        }
-        if (bonus > 0) {
-          calcPoints.value += bonus
-          addBonusPoints(bonus)
-        }
+
+    // Fever and Combo Multipliers
+    let finalPoints = calcPoints.value
+    if (isPlayerWord) {
+      comboStreak.value += 1
+      if (comboMultiplier.value > 1.0) {
+        finalPoints = Math.round(finalPoints * comboMultiplier.value)
+        detectedTags.push(`COMBO x${comboMultiplier.value}`)
       }
+      if (feverActive.value) {
+        sounds.playFever()
+      } else if (finalPoints >= 20 || detectedTags.length >= 2) {
+        sounds.playComboFanfare()
+        fireShake()
+      } else {
+        sounds.playWordSuccess(comboStreak.value)
+      }
+      addCombatPopup(`+${finalPoints}`, detectedTags.join(' • ') || 'MOT VALIDE', 'text-neon-yellow')
+    } else {
+      addCombatPopup(`+${finalPoints}`, 'IA SCORE', 'text-neon-purple')
     }
+
+    return finalPoints
   }
 
-  const randomDelay = (max) => Math.floor(max * Math.random())
-  const getCommonPrefixLength = (first, second) => {
-    const limit = Math.min(first.length, second.length)
+  const getCommonPrefixLength = (firstWord, secondWord) => {
     let length = 0
-    while (length < limit && first[length] === second[length]) {
+    const minLength = Math.min(firstWord.length, secondWord.length)
+    while (length < minLength && firstWord[length] === secondWord[length]) {
       length += 1
     }
     return length
@@ -399,32 +392,30 @@ export const useGameState = ({
       wordPlayed.value += nextLetterRaw
       if (isPrefixRepeat) {
         addPoint(nextLetterNormalized, 0)
-        playAtDuring(minusUrl)
       } else {
         addPoint(nextLetterNormalized)
       }
       index.value += 1
-      playAtDuring(wooshUrl)
-      setTimeout(() => typeWriter(), randomDelay(300))
+      sounds.playKeypress()
+      setTimeout(() => typeWriter(), 110)
     } else if (index.value === refWord.value.length && refWord.value !== '') {
-      pointsCount()
+      const isPlayerTurn = !isVsComputer.value || !computerTurn.value
+      const finalScore = pointsCount(isPlayerTurn)
       refWord.value = ''
       isTyping.value = false
       index.value = 0
 
-      if (isOnlineMode.value) {
-        playerPoints.value += calcPoints.value
+      if (computerTurn.value === true && isVsComputer.value) {
         computerTurn.value = false
-      } else if (computerTurn.value === true) {
-        computerTurn.value = false
-        comPoints.value += calcPoints.value
+        comPoints.value += finalScore
+        aiStatus.value = 'À ton tour !'
       } else {
-        playerPoints.value += calcPoints.value
-        computerTurn.value = true
+        playerPoints.value += finalScore
         if (isVsComputer.value) {
+          computerTurn.value = true
+          aiStatus.value = 'Réflexion en cours...'
           comPlay()
-        }
-        if (isSoloMode.value) {
+        } else {
           computerTurn.value = false
         }
       }
@@ -439,9 +430,7 @@ export const useGameState = ({
   }
 
   const isValidWord = (word) => {
-    if (!gameActive.value) {
-      return
-    }
+    if (!gameActive.value) return
     const entry = resolveEntry(word)
     if (!entry) {
       wordFail()
@@ -451,28 +440,8 @@ export const useGameState = ({
       wordFail()
       return
     }
-    if (isGrammarWar.value) {
-      if (!grammarTagRef.value) {
-        wordFail()
-        return
-      }
-      if (!entry.tags || !entry.tags.includes(grammarTagRef.value)) {
-        wordFail()
-        return
-      }
-    }
 
-    const owner = isOnlineMode.value
-      ? 'player'
-      : isSoloMode.value
-        ? 'player'
-        : isVsComputer.value
-          ? computerTurn.value
-            ? 'computer'
-            : 'player'
-          : computerTurn.value
-            ? 'player2'
-            : 'player1'
+    const owner = isSoloMode.value ? 'player' : computerTurn.value ? 'computer' : 'player'
     if (isVsComputer.value && owner === 'computer') {
       speedBonusAwarded.value = 0
     }
@@ -484,7 +453,6 @@ export const useGameState = ({
       description: formatFrequency(entry.freqLemma, entry.freqForm),
       visible: false,
       owner,
-      ownerId: isOnlineMode.value ? onlinePlayerIdRef.value : null,
       tags: entry.tags || [],
     }
 
@@ -493,47 +461,51 @@ export const useGameState = ({
     wordListDisp.value.push(wordObj)
   }
 
-  const getWord = () => {
-    if (!gameActive.value) {
-      return
-    }
-    const tag = isGrammarWar.value ? grammarTagRef.value : ''
-    if (isGrammarWar.value && !tag) {
-      return
-    }
-    const randomWord = pickWeightedWord(tag)
-    if (!randomWord) {
-      return
-    }
-    isValidWord(randomWord)
-  }
-
   const comPlay = () => {
-    if (!gameActive.value) {
-      return
-    }
-    if (!isVsComputer.value) {
-      return
-    }
-    if (isTyping.value === false) {
-      const delay = 1000 + Math.floor(Math.random() * 2000)
-      setTimeout(() => getWord(), delay)
-    }
+    if (!gameActive.value || !isVsComputer.value) return
+    aiThinking.value = true
+
+    let delay = 1800
+    if (aiDifficultyRef.value === 'novice') delay = 2600 + Math.random() * 800
+    if (aiDifficultyRef.value === 'expert') delay = 1100 + Math.random() * 500
+
+    aiStatus.value = 'Recherche lexicale...'
+    setTimeout(() => {
+      if (!gameActive.value || !computerTurn.value) return
+      aiThinking.value = false
+      const randomWord = pickWeightedWord('')
+      if (randomWord) {
+        aiStatus.value = `Joue : ${randomWord}`
+        isValidWord(randomWord)
+      }
+    }, delay)
   }
 
   const addWord = (word) => {
-    if (!gameActive.value || isTyping.value || ((isVsComputer.value || isSoloMode.value) && computerTurn.value)) {
-      return
-    }
-    if (isOnlineMode.value && !turnActiveRef.value) {
-      return
-    }
-    if (!word || word.trim().length === 0) {
-      return
-    }
+    if (!gameActive.value || isTyping.value || (isVsComputer.value && computerTurn.value)) return
+    if (!word || word.trim().length === 0) return
     speedBonusAwarded.value = speedBonus.value
     stopSpeedTimer()
     isValidWord(word)
+  }
+
+  const startSoloSeed = () => {
+    const seed = pickWeightedWord('')
+    if (seed) {
+      const entry = resolveEntry(seed)
+      if (entry) {
+        wordList.value.push(entry.normalized)
+        wordListDisp.value.push({
+          index: 0,
+          text: entry.raw,
+          normalized: entry.normalized,
+          description: 'Mot amorce',
+          visible: false,
+          owner: 'player',
+          tags: entry.tags || [],
+        })
+      }
+    }
   }
 
   const toggleWordVisibility = (wordIndex) => {
@@ -543,59 +515,8 @@ export const useGameState = ({
     }
   }
 
-  const playRemoteWord = (word) => {
-    if (!word) {
-      return
-    }
-    if (remoteTypeTimer) {
-      clearTimeout(remoteTypeTimer)
-      remoteTypeTimer = null
-    }
-    wordPlayed.value = ''
-    const letters = word.split('')
-    let idx = 0
-    const step = () => {
-      if (idx < letters.length) {
-        wordPlayed.value += letters[idx]
-        idx += 1
-        remoteTypeTimer = setTimeout(step, 120)
-        return
-      }
-      remoteTypeTimer = setTimeout(() => {
-        wordPlayed.value = ''
-      }, 600)
-    }
-    step()
-  }
-
-  const setOnlineSnapshot = ({
-    words = [],
-    normalized = [],
-    playerScore = 0,
-    opponentScore = 0,
-    resetTransient = true,
-  }) => {
-    wordList.value = normalized
-    wordListDisp.value = words
-    playerPoints.value = playerScore
-    comPoints.value = opponentScore
-    if (resetTransient) {
-      wordPlayed.value = ''
-      calcPoints.value = 0
-      pointsAdded.value = []
-      wrongWord.value = false
-      isTyping.value = false
-    }
-  }
-
-  onMounted(() => {
-    comPlay()
-  })
-
   const startSpeedTimer = () => {
-    if (speedTimerId) {
-      clearInterval(speedTimerId)
-    }
+    if (speedTimerId) clearInterval(speedTimerId)
     const startAt = Date.now()
     speedElapsed.value = 0
     speedTimerId = setInterval(() => {
@@ -611,34 +532,14 @@ export const useGameState = ({
   }
 
   watch(
-    () => [
-      computerTurn.value,
-      gameActive.value,
-      isTyping.value,
-      isVsComputer.value,
-      isSoloMode.value,
-      isOnlineMode.value,
-      turnActiveRef.value,
-    ],
-    ([isComputerTurn, isActive, typing, vsComputer, soloMode, onlineMode, turnActive]) => {
+    () => [computerTurn.value, gameActive.value, isTyping.value, isVsComputer.value, isSoloMode.value],
+    ([isComputerTurn, isActive, typing, vsComputer, soloMode]) => {
       if (!isActive || typing) {
         stopSpeedTimer()
         return
       }
-      if (onlineMode) {
-        if (turnActive) {
-          if (!speedTimerId) {
-            startSpeedTimer()
-          }
-          return
-        }
-        stopSpeedTimer()
-        return
-      }
-      if ((!vsComputer && !soloMode) || !isComputerTurn) {
-        if (!speedTimerId) {
-          startSpeedTimer()
-        }
+      if (soloMode || !isComputerTurn) {
+        if (!speedTimerId) startSpeedTimer()
         return
       }
       stopSpeedTimer()
@@ -647,36 +548,20 @@ export const useGameState = ({
 
   const startGame = () => {
     gameActive.value = true
-    if (!isVsComputer.value) {
+    sounds.initCtx()
+    if (isSoloMode.value) {
       computerTurn.value = false
-      return
-    }
-    if (computerTurn.value && !isTyping.value) {
-      comPlay()
-    }
-  }
-
-  const startSoloSeed = () => {
-    if (!gameActive.value || !isSoloMode.value) {
-      return
-    }
-    const tag = isGrammarWar.value ? grammarTagRef.value : ''
-    if (isGrammarWar.value && !tag) {
-      return
-    }
-    const randomWord = pickWeightedWord(tag)
-    if (randomWord) {
-      computerTurn.value = true
-      isValidWord(randomWord)
+      startSoloSeed()
+    } else {
+      // In PvC mode, start with player or AI
       computerTurn.value = false
+      startSoloSeed()
     }
   }
 
   const stopGame = () => {
     gameActive.value = false
-    isTyping.value = false
-    refWord.value = ''
-    index.value = 0
+    aiThinking.value = false
     stopSpeedTimer()
     speedElapsed.value = 0
     speedBonusAwarded.value = 0
@@ -697,8 +582,46 @@ export const useGameState = ({
     superShrinkBonus.value = 0
     anagramBonus.value = 0
     doubleLetterBonus.value = 0
+    comboStreak.value = 0
+    combatPopups.value = []
     pointsAdded.value = []
-    computerTurn.value = true
+    computerTurn.value = false
+    aiStatus.value = 'En veille'
+  }
+
+  // Live analysis of whatever the player is currently typing
+  const analyzeInput = (text) => {
+    if (!text || text.trim().length < 2) {
+      return { valid: false, duplicate: false, points: 0, palindrome: false, anagram: false, doubleLetter: false, superSuite: false, superShrink: false }
+    }
+    const entry = resolveEntry(text)
+    if (!entry) {
+      return { valid: false, duplicate: false, points: 0, palindrome: false, anagram: false, doubleLetter: false, superSuite: false, superShrink: false }
+    }
+    const duplicate = wordList.value.includes(entry.normalized)
+    const points = totalLetters(entry.normalized)
+    const lastWord = wordList.value.length ? wordList.value[wordList.value.length - 1] : ''
+    const palindrome = isPalindrome(entry.normalized) > 0
+    const anagram = lastWord ? isAnagram(lastWord, entry.normalized) : false
+    const doubleLetter = countDoubleLetters(entry.normalized) > 0
+    let superSuite = false
+    let superShrink = false
+    if (lastWord) {
+      const idx1 = letters.indexOf(lastWord[0])
+      const idx2 = letters.indexOf(entry.normalized[0])
+      if (idx1 !== -1 && idx2 !== -1 && Math.abs(idx1 - idx2) === 1) superSuite = true
+      if (Math.abs(lastWord.length - entry.normalized.length) === 1) superShrink = true
+    }
+    return {
+      valid: !duplicate,
+      duplicate,
+      points,
+      palindrome,
+      anagram,
+      doubleLetter,
+      superSuite,
+      superShrink,
+    }
   }
 
   onBeforeUnmount(() => {
@@ -725,13 +648,19 @@ export const useGameState = ({
     comPoints,
     computerTurn,
     isTyping,
+    comboStreak,
+    comboMultiplier,
+    feverActive,
+    combatPopups,
+    triggerShake,
+    aiThinking,
+    aiStatus,
+    analyzeInput,
     startGame,
     stopGame,
     resetGame,
     startSoloSeed,
     addWord,
     toggleWordVisibility,
-    playRemoteWord,
-    setOnlineSnapshot,
   }
 }

@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&text=0123456789&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&text=0123456789&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
 @import './styles/cssanimation.css';
 
 @tailwind base;
@@ -17,17 +17,44 @@ body {
   margin: 0;
   min-height: 100vh;
   background-color: #0b0616;
-  background-image: url('./images/synthWall.jpg');
+  background-image: radial-gradient(circle at 50% 20%, rgba(140, 30, 255, 0.25) 0%, rgba(11, 6, 22, 0.95) 80%), url('./images/synthWall.jpg');
   background-size: cover;
   background-position: top;
+  background-attachment: fixed;
   color: #ffd319;
   font-family: 'Orbitron', 'Bungee', 'Road Rage', cursive;
+  overflow-x: hidden;
 }
 
 @layer utilities {
   .text-glow {
-    text-shadow: 0 0 2px rgba(140, 30, 255, 0.8), 0 0 6px rgba(140, 30, 255, 0.45),
-      0 0 12px rgba(140, 30, 255, 0.35);
+    text-shadow: 0 0 2px rgba(140, 30, 255, 0.8), 0 0 8px rgba(140, 30, 255, 0.6),
+      0 0 16px rgba(140, 30, 255, 0.4);
+  }
+
+  .text-glow-yellow {
+    text-shadow: 0 0 3px rgba(255, 211, 25, 0.9), 0 0 10px rgba(255, 211, 25, 0.5);
+  }
+
+  .text-glow-cyan {
+    text-shadow: 0 0 3px rgba(40, 240, 255, 0.9), 0 0 10px rgba(40, 240, 255, 0.5);
+  }
+
+  .text-glow-pink {
+    text-shadow: 0 0 3px rgba(255, 41, 117, 0.9), 0 0 10px rgba(255, 41, 117, 0.5);
+  }
+
+  .arcade-shake {
+    animation: arcadeShake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  .fever-glow {
+    box-shadow: 0 0 25px rgba(242, 34, 255, 0.6), inset 0 0 15px rgba(40, 240, 255, 0.4);
+    animation: feverPulse 1.2s infinite alternate ease-in-out;
+  }
+
+  .float-combat-text {
+    animation: combatFloat 1.2s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
   }
 
   .zoomIn {
@@ -43,7 +70,7 @@ body {
   }
 
   .quietMad {
-    animation: quietMad 1s infinite;
+    animation: quietMad 0.6s ease-in-out;
   }
 
   .blurOut {
@@ -51,17 +78,54 @@ body {
   }
 
   .fade-in {
-    animation: fadeIn 0.6s ease-out both;
+    animation: fadeIn 0.4s ease-out both;
   }
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes arcadeShake {
+  10%, 90% { transform: translate3d(-2px, 1px, 0); }
+  20%, 80% { transform: translate3d(3px, -2px, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 3px, 0); }
+  40%, 60% { transform: translate3d(4px, -2px, 0); }
+}
+
+@keyframes combatFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 15px) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -10px) scale(1.15);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -45px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -75px) scale(0.9);
+  }
+}
+
+@keyframes feverPulse {
+  from {
+    border-color: rgba(255, 41, 117, 0.9);
+    box-shadow: 0 0 15px rgba(255, 41, 117, 0.5), inset 0 0 10px rgba(40, 240, 255, 0.3);
+  }
+  to {
+    border-color: rgba(40, 240, 255, 0.9);
+    box-shadow: 0 0 25px rgba(40, 240, 255, 0.6), inset 0 0 15px rgba(242, 34, 255, 0.4);
   }
 }

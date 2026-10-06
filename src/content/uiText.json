@@ -4,26 +4,26 @@
     "subtitle": "Tape un mot pour marquer des points.",
     "buttons": {
       "changelog": "Changelog",
-      "rules": "Règles précises"
+      "rules": "Règles"
     }
   },
   "overlay": {
     "close": "Fermer",
     "changelogTitle": "Changelog",
-    "rulesTitle": "Règles",
+    "rulesTitle": "Règles du jeu",
     "versionLabel": "Version",
     "sections": {
       "flow": "Déroulement",
-      "bonus": "Bonus"
+      "bonus": "Combos & Multiplicateurs"
     }
   },
   "actions": {
     "back": "← Retour",
     "ready": "Prêt ?",
     "start": "Démarrer",
-    "change": "changer",
+    "change": "Changer",
     "replay": "Rejouer",
-    "mainMenu": "Menu principal"
+    "mainMenu": "Menu arcade"
   },
   "labels": {
     "mode": "Mode",
@@ -31,108 +31,84 @@
     "tag": "Tag",
     "minutesSuffix": "min"
   },
-  "players": {
-    "defaultOne": "Joueur 1",
-    "defaultTwo": "Joueur 2",
-    "player": "Joueur",
-    "computer": "Ordinateur"
-  },
   "modes": {
-    "solo": "Solo",
-    "pvc": "Joueur VS Ordinateur",
-    "pvp": "Joueur VS Joueur",
-    "online": "Bataille en ligne"
+    "solo": "Solo Rush",
+    "pvc": "Cyber Duel (VS IA)"
   },
-  "grammarTags": {
-    "VER": "Verbes",
-    "ADJ": "Adjectifs",
-    "NOM": "Noms"
+  "aiOpponents": {
+    "novice": {
+      "name": "Glitch-01",
+      "title": "IA Débutante",
+      "avatar": "👾",
+      "desc": "Idéal pour s'entraîner. Réflexion posée.",
+      "quote": "Calcul de début de partie..."
+    },
+    "medium": {
+      "name": "Neo-Hacker",
+      "title": "IA Cyber-Punk",
+      "avatar": "⚡",
+      "desc": "Rythme soutenu et sens de la répartie.",
+      "quote": "Tes lettres ne me font pas peur !"
+    },
+    "expert": {
+      "name": "Cyber-Titan",
+      "title": "IA Maître",
+      "avatar": "🤖",
+      "desc": "Vitesse d'exécution et combos impitoyables.",
+      "quote": "L'IA ne fait aucun compromis."
+    }
   },
   "results": {
     "tie": "Égalité",
-    "winner": "Gagnant",
-    "leaderboard": "Classement",
+    "victory": "Victoire !",
+    "defeat": "Défaite face à l'IA",
+    "soloComplete": "Chrono écoulé !",
+    "newRecord": "NOUVEAU RECORD !",
     "replay": "Rejouer",
     "mainMenu": "Menu principal"
   },
-  "online": {
-    "joinTitle": "Rejoindre une partie",
-    "createTitle": "Créer une partie",
-    "lobbyTitle": "Salon en ligne",
-    "configRequired": "Configurez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY pour activer le mode en ligne.",
-    "createRoom": "Créer un salon",
-    "joinWithCode": "Rejoindre avec un code",
-    "roomCodePlaceholder": "CODE DU SALON",
-    "joinButton": "Rejoindre",
-    "room": "Salon",
-    "shareLink": "Lien de partage",
-    "yourName": "Ton pseudo",
-    "playerNamePlaceholder": "Pseudo",
-    "enterLobby": "Rejoindre le salon",
-    "joining": "Connexion…",
-    "players": "Joueurs",
-    "hostSuffix": " (hôte)",
-    "slots": "Places : {count}/8",
-    "settings": "Paramètres",
-    "game": "Jeu",
-    "tag": "Tag",
-    "duration": "Durée",
-    "startRoom": "Lancer la partie",
-    "waitingForHost": "En attente de l'hôte pour démarrer…",
-    "roomNotFound": "Salon introuvable."
-  },
   "rules": {
     "flow": [
-      "Le chrono démarre au clic sur Démarrer et la manche dure jusqu'à zéro.",
-      "Chaque tour consiste à proposer un mot valide.",
-      "Un mot valide est ajouté à la liste et rapporte des points.",
-      "Un mot invalide affiche FAIL et retire 1 seconde de pénalité.",
-      "La manche se termine à la fin du temps et affiche le résultat."
+      "Tape un mot valide avant la fin du chrono pour marquer des points.",
+      "En Solo Rush : enchaîne un maximum de mots pour exploser ton record.",
+      "En Cyber Duel : joue au tour par tour contre l'IA qui répond à tes mots.",
+      "Chaque mot invalide (FAIL) retire 1 seconde et brise ta chaîne de combo.",
+      "Enchaîne les mots sans faute pour déclencher le FEVER MODE (points x1.5 puis x2) !"
     ],
     "bonus": [
-      "Base : points des lettres selon scrabble.json.",
-      "Palindrome : bonus si le mot se lit pareil à l'envers (+10).",
-      "Anagramme : bonus si le mot réutilise les mêmes lettres que le mot précédent (+5).",
-      "Double lettre : bonus +2 par occurrence de lettres consécutives.",
-      "Super Suite : bonus si la première lettre est adjacente à celle du mot précédent.",
-      "Super Shrink : bonus si la longueur diffère de ±1 par rapport au mot précédent.",
-      "Initial Gap : bonus selon la distance alphabétique entre premières lettres.",
-      "Vitesse : bonus proportionnel à la rapidité de frappe (jusqu'à +10)."
+      "Base : valeur Scrabble de chaque lettre.",
+      "Palindrome : mot identique à l'envers (+10).",
+      "Anagramme : réutilise les mêmes lettres que le mot précédent (+5).",
+      "Double lettre : +2 par paire de lettres identiques consécutives.",
+      "Super Suite : première lettre adjacente dans l'alphabet au mot précédent (+5 ou plus).",
+      "Super Shrink : longueur qui diffère d'exactement ±1 lettre (+5).",
+      "Vitesse de frappe : jusqu'à +10 points supplémentaires si tu tapes en moins de 3s.",
+      "Combo Streak : multiplicateur x1.5 à 3 mots d'affilée, x2 à 5 mots (HYPER FEVER)."
     ]
   },
   "changelog": [
     {
+      "version": "0.7.0",
+      "items": [
+        "Peau neuve arcade : interface repensée, centrée sur le Solo Rush et le Cyber Duel contre l'IA.",
+        "Synthétiseur sonore Web Audio avec retour tactile mécanique, fanfares de combo et gestion du son.",
+        "Ajout de 'Juice' : Floating Combat Text (+points et combos jaillissants), secousses d'impact et effets néons.",
+        "Système de combo et Fever Mode (multiplicateur x1.5 et x2).",
+        "Analyse de mot en temps réel : prévisualisation du score et détection des bonus sous le curseur.",
+        "Focus automatique permanent sur le champ de saisie.",
+        "3 personnalités d'IA (Glitch-01, Neo-Hacker, Cyber-Titan) avec citations et rythmes dédiés.",
+        "Sauvegarde des records et statistiques en local (High Score, mots joués, combos max)."
+      ]
+    },
+    {
       "version": "0.6.0",
       "items": [
-        "Correction des retours arrières défectueux (GameTypeSelectScreen, ReadyScreen, sous-étape PlayerNamesScreen).",
-        "Harmonisation de la langue et traduction complète de l'interface du salon en ligne en français.",
-        "Uniformisation des largeurs de fenêtres d'accueil et de sélection pour éviter les sauts visuels.",
-        "Ajout des indicateurs visuels de bonus Anagramme et Double-lettre dans le panneau latéral.",
-        "Ajout de l'option de revanche immédiate depuis l'écran de fin sans tout réinitialiser."
+        "Correction des retours arrières défectueux.",
+        "Harmonisation de la langue et traduction complète.",
+        "Uniformisation des largeurs de fenêtres.",
+        "Indicateurs de bonus Anagramme et Double-lettre.",
+        "Revanche directe depuis l'écran de fin."
       ]
-    },
-    {
-      "version": "0.5.16",
-      "items": ["Keep online snapshot updates from resetting local typing flow."]
-    },
-    {
-      "version": "0.5.15",
-      "items": ["Add per-player colors for online scores and word list.", "Add anagram and double-letter bonuses."]
-    },
-    {
-      "version": "0.5.2",
-      "items": ["Add header buttons linking to the changelog and detailed rules."]
-    },
-    {
-      "version": "0.5.1",
-      "items": [
-        "Add create-online game type selection before the online lobby.",
-        "Document the menu flow tree in README."
-      ]
-    },
-    {
-      "version": "0.5.0",
-      "items": ["Split entry flow into \"Join\" and \"Create\", with create branching to online or local."]
     }
   ]
 }

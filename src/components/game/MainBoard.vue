@@ -22,6 +22,8 @@
         :pointsAdded="state.pointsAdded"
         :wordChars="state.wordChars"
         :dynamicFontSize="state.dynamicFontSize"
+        :combatPopups="state.combatPopups"
+        :feverActive="state.feverActive"
       />
     </div>
   </section>
