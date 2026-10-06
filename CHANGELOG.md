@@ -1,4 +1,13 @@
 # Changelog
+ 
+## 0.6.0
+
+- Fix broken back navigation in GameTypeSelectScreen and ReadyScreen.
+- Fix sub-step back navigation in PlayerNamesScreen.
+- Translate and harmonize online screens and UI copy to French.
+- Harmonize modal screen widths and fix visual layout jumping across steps.
+- Add visual indicators for anagram and double-letter bonuses in BonusPanel.
+- Allow immediate rematch from results screen without resetting all setup.
 
 ## 0.5.16
 

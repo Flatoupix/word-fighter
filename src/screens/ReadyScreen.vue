@@ -4,6 +4,7 @@
     :showBack="showBack"
     :backLabel="backLabel"
     :maxWidthClass="maxWidthClass"
+    @back="$emit('back')"
   >
     <div class="mt-3 text-center font-numbers text-3xl text-neon-yellow sm:text-4xl">
       {{ formattedTime }}
@@ -29,11 +30,11 @@ defineProps({
   },
   startLabel: {
     type: String,
-    default: 'Start',
+    default: 'Démarrer',
   },
   backLabel: {
     type: String,
-    default: '← Back',
+    default: '← Retour',
   },
   showBack: {
     type: Boolean,
@@ -41,7 +42,7 @@ defineProps({
   },
   maxWidthClass: {
     type: String,
-    default: 'md:max-w-[33vw]',
+    default: 'md:max-w-[32rem]',
   },
 })
 

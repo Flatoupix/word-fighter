@@ -1,5 +1,5 @@
 <template>
-  <ScreenShell title="Choisis ton jeu" class="my-auto">
+  <ScreenShell title="Choisis ton jeu" class="my-auto" :showBack="true" @back="$emit('back')">
     <div class="mt-4 grid gap-4">
       <SelectCard
         value="word-fight"
@@ -27,5 +27,5 @@
 import ScreenShell from '../components/ui/ScreenShell.vue'
 import SelectCard from '../components/ui/SelectCard.vue'
 
-defineEmits(['select'])
+defineEmits(['select', 'back'])
 </script>

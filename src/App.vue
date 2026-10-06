@@ -23,6 +23,9 @@
           >
             {{ uiText.header.buttons.rules }}
           </button>
+          <span class="rounded-full border border-neon-yellow/20 px-2.5 py-0.5 text-[11px] font-ui text-neon-yellow/50">
+            v{{ GAME_VERSION }}
+          </span>
         </div>
       </header>
 
@@ -38,6 +41,7 @@
         :leaderboard="resultLeaderboard"
         :isOnline="isOnlineSession"
         @restart="resetMode"
+        @rematch="rematchGame"
         @back="goBack"
       />
 
@@ -66,6 +70,7 @@
       <GameTypeSelectScreen
         v-else-if="!isStarted && (entryStep === 'local' || entryStep === 'online') && !gameType"
         @select="selectGameType"
+        @back="goBack"
       />
 
       <GrammarTagSelectScreen
@@ -136,7 +141,7 @@
           <div class="text-center text-xs text-neon-yellow/60">
             {{ uiText.labels.mode }}: {{ modeLabel }} · {{ uiText.labels.time }}: {{ durationLabel
             }}<template v-if="grammarTagLabel"> · {{ uiText.labels.tag }}: {{ grammarTagLabel }}</template>
-            <button type="button" class="ml-2 text-neon-purple/80 hover:text-neon-purple" @click="resetMode">
+            <button type="button" class="ml-2 text-neon-purple/80 hover:text-neon-purple" @click="handleQuitGame">
               {{ uiText.actions.change }}
             </button>
           </div>
@@ -218,6 +223,7 @@ import ResultScreen from './screens/ResultScreen.vue'
 import TimeSelectScreen from './screens/TimeSelectScreen.vue'
 import { useGameState } from './composables/useGameState'
 import { supabase } from './lib/supabaseClient'
+import { GAME_VERSION } from './config/constants'
 import uiText from './content/uiText.json'
 
 const gameType = ref('')
@@ -274,6 +280,8 @@ const {
   pointsAdded,
   superSuiteBonus,
   superShrinkBonus,
+  anagramBonus,
+  doubleLetterBonus,
   palindromeActive,
   scoreValue,
   speedElapsed,
@@ -375,6 +383,8 @@ const mainBoardState = computed(() => ({
   dynamicFontSize: dynamicFontSize.value,
   superSuiteBonus: superSuiteBonus.value,
   superShrinkBonus: superShrinkBonus.value,
+  anagramBonus: anagramBonus.value,
+  doubleLetterBonus: doubleLetterBonus.value,
   palindromeActive: palindromeActive.value,
   scoreValue: scoreValue.value,
   scoreFontSize: scoreFontSize.value,
@@ -502,6 +512,30 @@ const confirmNames = ({ playerOne, playerTwo }) => {
   namesConfirmed.value = true
 }
 
+const handleQuitGame = () => {
+  if (isStarted.value) {
+    if (window.confirm('Voulez-vous vraiment quitter la partie en cours ?')) {
+      resetMode()
+    }
+  } else {
+    resetMode()
+  }
+}
+
+const rematchGame = () => {
+  stopTimer()
+  showResults.value = false
+  resetGame()
+  isStarted.value = false
+  timeLeft.value = (selectedDuration.value || 1) * 60
+  resultPlayerScore.value = 0
+  resultComputerScore.value = 0
+  resultWinnerLabel.value = ''
+  resultWinnerScore.value = 0
+  resultWinnerClass.value = ''
+  resultLeaderboard.value = []
+}
+
 const goBack = () => {
   if (showResults.value) {
     resetMode()
@@ -510,52 +544,97 @@ const goBack = () => {
   if (isStarted.value) {
     return
   }
+
+  // Session en ligne ou écran du salon
   if (isOnlineSession.value) {
+    if (onlineRoomId.value || hasRoomParam.value) {
+      onlinePlayers.value = []
+      onlineRoomId.value = ''
+      onlinePlayerId.value = ''
+      onlineTurnIndex.value = 0
+      onlineRoomSettings.value = { gameType: '', tag: '', duration: 1, turnIndex: 0, state: null }
+      onlineRoomState.value = { words: [], normalized: [], scores: {} }
+      lastSyncedWordIndex.value = 0
+      clearRoomParam()
+      stopTimer()
+      cleanupOnlineChannels()
+      if (onlineEntryMode.value === 'join') {
+        selectedMode.value = ''
+        entryStep.value = ''
+        return
+      }
+      if (gameType.value === 'grammar-war' && grammarTag.value) {
+        grammarTag.value = ''
+        return
+      }
+      gameType.value = ''
+      return
+    }
+
+    if (onlineEntryMode.value === 'create') {
+      if (gameType.value === 'grammar-war' && grammarTag.value) {
+        grammarTag.value = ''
+        return
+      }
+      if (gameType.value) {
+        gameType.value = ''
+        return
+      }
+      selectedMode.value = ''
+      entryStep.value = 'create'
+      onlineEntryMode.value = 'join'
+      return
+    }
+
     selectedMode.value = ''
-    entryStep.value = onlineEntryMode.value === 'create' ? 'online' : ''
+    entryStep.value = ''
     onlineEntryMode.value = 'join'
-    gameType.value = ''
-    grammarTag.value = ''
-    onlinePlayers.value = []
-    onlineRoomId.value = ''
-    onlinePlayerId.value = ''
-    onlineTurnIndex.value = 0
-    onlineRoomSettings.value = { gameType: '', tag: '', duration: 1, turnIndex: 0, state: null }
-    onlineRoomState.value = { words: [], normalized: [], scores: {} }
-    lastSyncedWordIndex.value = 0
-    clearRoomParam()
-    selectedDuration.value = 0
-    timeLeft.value = 0
-    stopTimer()
-    cleanupOnlineChannels()
     return
   }
+
+  // Sélection du temps
   if (selectedDuration.value) {
     selectedDuration.value = 0
     timeLeft.value = 0
     stopTimer()
     return
   }
+
+  // Noms PvP
+  if (selectedMode.value === 'pvp' && namesConfirmed.value) {
+    namesConfirmed.value = false
+    return
+  }
+
+  // Choix du mode local
   if (selectedMode.value) {
     selectedMode.value = ''
-    clearRoomParam()
     namesConfirmed.value = false
     playerOneName.value = uiText.players.defaultOne
     playerTwoName.value = uiText.players.defaultTwo
     return
   }
+
+  // Tags grammaticaux
   if (gameType.value === 'grammar-war' && grammarTag.value) {
     grammarTag.value = ''
     return
   }
+
+  // Type de jeu (Word Fight, Kamoulox, Grammar War)
   if (gameType.value) {
     gameType.value = ''
     return
   }
+
+  // Écran création (local ou en ligne)
   if (entryStep.value === 'local' || entryStep.value === 'online') {
     entryStep.value = 'create'
+    selectedMode.value = ''
     return
   }
+
+  // Écran d'accueil
   if (entryStep.value) {
     entryStep.value = ''
     return

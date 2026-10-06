@@ -4,13 +4,13 @@
       <SelectCard
         value="join"
         title="Rejoindre une partie"
-        description="Acces direct avec un code ou un lien."
+        description="Accès direct avec un code ou un lien."
         @select="$emit('select', $event)"
       />
       <SelectCard
         value="create"
-        title="Creer une partie"
-        description="Choisis ensuite online ou local."
+        title="Créer une partie"
+        description="Choisis ensuite en ligne ou en local."
         @select="$emit('select', $event)"
       />
     </div>

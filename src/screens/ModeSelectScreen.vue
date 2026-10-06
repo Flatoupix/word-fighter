@@ -4,19 +4,19 @@
       <SelectCard
         value="solo"
         title="Solo"
-        description="Un mot aléatoire, puis toi seul."
+        description="Un mot aléatoire, puis toi seul face au chrono."
         @select="$emit('select', $event)"
       />
       <SelectCard
         value="pvc"
-        title="Player VS Computer"
+        title="Joueur VS Ordinateur"
         description="Affronte l'IA avec des mots aléatoires."
         @select="$emit('select', $event)"
       />
       <SelectCard
         value="pvp"
-        title="Player VS Player"
-        description="Tour par tour en local, même clavier."
+        title="Joueur VS Joueur"
+        description="Tour par tour en local, sur le même clavier."
         @select="$emit('select', $event)"
       />
     </div>

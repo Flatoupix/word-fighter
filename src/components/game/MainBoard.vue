@@ -8,6 +8,8 @@
         <BonusPanel
           :superSuiteBonus="state.superSuiteBonus"
           :superShrinkBonus="state.superShrinkBonus"
+          :anagramBonus="state.anagramBonus"
+          :doubleLetterBonus="state.doubleLetterBonus"
           :palindromeActive="state.palindromeActive"
           :scoreValue="state.scoreValue"
           :scoreFontSize="state.scoreFontSize"

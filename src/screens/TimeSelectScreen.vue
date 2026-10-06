@@ -2,7 +2,7 @@
   <ScreenShell
     title="Durée de la partie"
     :showBack="true"
-    maxWidthClass="md:max-w-[33vw]"
+    maxWidthClass="md:max-w-[32rem]"
     @back="$emit('back')"
   >
     <div class="mt-4 grid gap-4">

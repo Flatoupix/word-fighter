@@ -3,8 +3,8 @@
     title="Nom du joueur"
     :showBack="true"
     paddingClass="p-3 sm:p-4"
-    maxWidthClass="md:max-w-[33vw]"
-    @back="$emit('back')"
+    maxWidthClass="md:max-w-[32rem]"
+    @back="onBack"
   >
     <div class="mt-4">
       <label class="text-[9px] font-ui uppercase tracking-wide text-neon-yellow/50 sm:text-[10px]">
@@ -48,7 +48,7 @@ const step = ref(1)
 const currentName = ref(localPlayerOne.value)
 
 const stepLabel = computed(() => (step.value === 1 ? 'Joueur 1' : 'Joueur 2'))
-const stepPlaceholder = computed(() => (step.value === 1 ? 'Player 1' : 'Player 2'))
+const stepPlaceholder = computed(() => (step.value === 1 ? 'Joueur 1' : 'Joueur 2'))
 const buttonLabel = computed(() => (step.value === 1 ? 'Suivant' : 'Continuer'))
 
 watch(
@@ -71,14 +71,23 @@ watch(
   }
 )
 
+const onBack = () => {
+  if (step.value === 2) {
+    step.value = 1
+    currentName.value = localPlayerOne.value
+    return
+  }
+  emit('back')
+}
+
 const onConfirm = () => {
   if (step.value === 1) {
-    localPlayerOne.value = currentName.value.trim() || 'Player 1'
+    localPlayerOne.value = currentName.value.trim() || 'Joueur 1'
     step.value = 2
     currentName.value = localPlayerTwo.value
     return
   }
-  localPlayerTwo.value = currentName.value.trim() || 'Player 2'
+  localPlayerTwo.value = currentName.value.trim() || 'Joueur 2'
   emit('confirm', { playerOne: localPlayerOne.value, playerTwo: localPlayerTwo.value })
 }
 </script>

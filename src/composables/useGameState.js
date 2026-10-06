@@ -38,6 +38,8 @@ export const useGameState = ({
   const calcPoints = ref(0)
   const superSuiteBonus = ref(0)
   const superShrinkBonus = ref(0)
+  const anagramBonus = ref(0)
+  const doubleLetterBonus = ref(0)
   const pointsAdded = ref([])
 
   const wordChars = computed(() => wordPlayed.value.split(''))
@@ -98,6 +100,8 @@ export const useGameState = ({
       calcPoints.value = 0
       superSuiteBonus.value = 0
       superShrinkBonus.value = 0
+      anagramBonus.value = 0
+      doubleLetterBonus.value = 0
       wordInput.value = ''
       pointsAdded.value = []
       isTyping.value = false
@@ -298,17 +302,25 @@ export const useGameState = ({
       isAdjacentLetter(lastWord, prevWord)
       isGreaterOrTinierWord(lastWord, prevWord)
       if (isAnagram(prevWord, lastWord)) {
-        const anagramBonus = 5
-        calcPoints.value += anagramBonus
-        addBonusPoints(anagramBonus)
+        const bonus = 5
+        anagramBonus.value = bonus
+        calcPoints.value += bonus
+        addBonusPoints(bonus)
+      } else {
+        anagramBonus.value = 0
       }
+    } else {
+      anagramBonus.value = 0
     }
 
     const doubleLetterCount = countDoubleLetters(currentWord)
     if (doubleLetterCount > 0) {
-      const doubleLetterBonus = doubleLetterCount * 2
-      calcPoints.value += doubleLetterBonus
-      addBonusPoints(doubleLetterBonus)
+      const bonus = doubleLetterCount * 2
+      doubleLetterBonus.value = bonus
+      calcPoints.value += bonus
+      addBonusPoints(bonus)
+    } else {
+      doubleLetterBonus.value = 0
     }
 
     calcPoints.value += isPalindrome(wordPlayed.value)
@@ -683,6 +695,8 @@ export const useGameState = ({
     calcPoints.value = 0
     superSuiteBonus.value = 0
     superShrinkBonus.value = 0
+    anagramBonus.value = 0
+    doubleLetterBonus.value = 0
     pointsAdded.value = []
     computerTurn.value = true
   }
@@ -700,6 +714,8 @@ export const useGameState = ({
     pointsAdded,
     superSuiteBonus,
     superShrinkBonus,
+    anagramBonus,
+    doubleLetterBonus,
     palindromeActive,
     scoreValue,
     speedElapsed,

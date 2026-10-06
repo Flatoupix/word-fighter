@@ -33,11 +33,11 @@ defineProps({
   },
   backLabel: {
     type: String,
-    default: '← Back',
+    default: '← Retour',
   },
   maxWidthClass: {
     type: String,
-    default: 'md:max-w-[30rem]',
+    default: 'md:max-w-[32rem]',
   },
   paddingClass: {
     type: String,

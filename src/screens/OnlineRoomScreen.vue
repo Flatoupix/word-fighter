@@ -1,30 +1,30 @@
 <template>
-  <ScreenShell :title="titleLabel" :showBack="true" maxWidthClass="md:max-w-[36rem]" @back="$emit('back')">
-
+  <ScreenShell :title="titleLabel" :showBack="true" maxWidthClass="md:max-w-[32rem]" @back="handleBack">
     <p v-if="!supabaseReady" class="mt-3 text-center text-xs text-neon-yellow/70">
-      Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable online mode.
+      {{ uiText.online.configRequired }}
     </p>
 
     <template v-else>
       <div v-if="step === 'landing'" class="mt-4 space-y-4">
         <PrimaryButton v-if="showCreate" @click="createRoom">
-          <span class="font-display text-xl text-neon-yellow">Create room</span>
+          <span class="font-display text-xl text-neon-yellow">{{ uiText.online.createRoom }}</span>
         </PrimaryButton>
         <div v-if="showJoin" class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
-          <label class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Join with code</label>
+          <label class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.joinWithCode }}</label>
           <div class="mt-2 flex items-center gap-2">
             <input
               v-model="joinCode"
               type="text"
               class="w-full rounded-md border border-neon-pink/80 bg-black/30 px-3 py-2 font-ui text-xs text-neon-yellow placeholder:text-neon-yellow/40 focus:outline-none focus:ring-2 focus:ring-neon-purple/60 sm:text-sm"
-              placeholder="ROOM CODE"
+              :placeholder="uiText.online.roomCodePlaceholder"
+              @keydown.enter.prevent="joinFromCode"
             />
             <button
               type="button"
               class="rounded-md border border-neon-pink/70 bg-black/30 px-3 py-2 text-xs text-neon-yellow transition hover:border-neon-purple/80"
               @click="joinFromCode"
             >
-              Join
+              {{ uiText.online.joinButton }}
             </button>
           </div>
         </div>
@@ -33,57 +33,57 @@
 
       <div v-else-if="step === 'name'" class="mt-4 space-y-4">
         <div class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
-          <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Room</div>
+          <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.room }}</div>
           <div class="mt-1 font-display text-2xl text-neon-yellow">{{ roomId }}</div>
-          <div class="mt-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Share link</div>
+          <div class="mt-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.shareLink }}</div>
           <div class="mt-1 break-all text-xs text-neon-yellow/80">{{ shareLink }}</div>
         </div>
         <div>
-          <label class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Your name</label>
+          <label class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.yourName }}</label>
           <input
             v-model="playerName"
             type="text"
             class="mt-2 w-full rounded-md border border-neon-pink/80 bg-black/30 px-3 py-2 font-ui text-xs text-neon-yellow placeholder:text-neon-yellow/40 focus:outline-none focus:ring-2 focus:ring-neon-purple/60 sm:text-sm"
-            placeholder="Player"
+            :placeholder="uiText.online.playerNamePlaceholder"
             @keydown.enter.prevent="joinRoom"
           />
         </div>
         <PrimaryButton :disabled="!canJoin" @click="joinRoom">
-          <span class="font-display text-xl text-neon-yellow">{{ isBusy ? 'Joining...' : 'Enter lobby' }}</span>
+          <span class="font-display text-xl text-neon-yellow">{{ isBusy ? uiText.online.joining : uiText.online.enterLobby }}</span>
         </PrimaryButton>
         <p v-if="errorMessage" class="text-xs text-neon-orange">{{ errorMessage }}</p>
       </div>
 
       <div v-else class="mt-4 space-y-4">
         <div class="rounded-md border border-neon-pink/60 bg-black/30 p-3 text-center">
-          <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Room</div>
+          <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.room }}</div>
           <div class="font-display text-2xl text-neon-yellow">{{ roomId }}</div>
-          <div class="mt-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Share link</div>
+          <div class="mt-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.shareLink }}</div>
           <div class="mt-1 break-all text-xs text-neon-yellow/80">{{ shareLink }}</div>
         </div>
 
         <div class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
-          <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Players</div>
+          <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.players }}</div>
           <ul class="mt-2 space-y-1 text-sm text-neon-yellow">
             <li v-for="player in players" :key="player.player_id">
-              {{ player.name }}<span v-if="player.is_host"> (host)</span>
+              {{ player.name }}<span v-if="player.is_host">{{ uiText.online.hostSuffix }}</span>
             </li>
           </ul>
           <div class="mt-2 text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">
-            Slots: {{ players.length }}/8
+            {{ uiText.online.slots.replace('{count}', players.length) }}
           </div>
         </div>
 
         <div class="rounded-md border border-neon-pink/60 bg-black/30 p-3">
-          <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Settings</div>
+          <div class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.settings }}</div>
           <div class="mt-2 text-xs text-neon-yellow/80">
-            Game: {{ settingsLabel }}
+            {{ uiText.online.game }} : {{ settingsLabel }}
           </div>
           <div v-if="roomSettings.tag" class="mt-1 text-xs text-neon-yellow/80">
-            Tag: {{ roomSettings.tag }}
+            {{ uiText.online.tag }} : {{ roomSettings.tag }}
           </div>
           <div class="mt-2 flex items-center justify-between">
-            <span class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">Duration</span>
+            <span class="text-[10px] font-ui uppercase tracking-wide text-neon-yellow/50">{{ uiText.online.duration }}</span>
             <select
               v-model.number="duration"
               class="rounded-md border border-neon-pink/70 bg-black/30 px-2 py-1 text-xs text-neon-yellow"
@@ -95,9 +95,9 @@
         </div>
 
         <PrimaryButton v-if="isHost" :disabled="players.length === 0" @click="startRoom">
-          <span class="font-display text-xl text-neon-yellow">Start</span>
+          <span class="font-display text-xl text-neon-yellow">{{ uiText.online.startRoom }}</span>
         </PrimaryButton>
-        <div v-else class="text-center text-xs text-neon-yellow/70">Waiting for host to start…</div>
+        <div v-else class="text-center text-xs text-neon-yellow/70">{{ uiText.online.waitingForHost }}</div>
       </div>
     </template>
   </ScreenShell>
@@ -109,6 +109,7 @@ import PrimaryButton from '../components/ui/PrimaryButton.vue'
 import ScreenShell from '../components/ui/ScreenShell.vue'
 import { supabase } from '../lib/supabaseClient'
 import { generateRoomCode } from '../lib/roomCode'
+import uiText from '../content/uiText.json'
 
 const props = defineProps({
   gameType: {
@@ -147,6 +148,7 @@ const step = ref('landing')
 const isHost = ref(false)
 const duration = ref(1)
 const isBusy = ref(false)
+const hasUrlRoomParam = ref(false)
 const durationOptions = [1, 3, 5]
 let roomChannel = null
 let playersChannel = null
@@ -160,9 +162,9 @@ const settingsLabel = computed(() => {
 })
 
 const titleLabel = computed(() => {
-  if (props.entryMode === 'join') return 'Rejoindre une partie'
-  if (props.entryMode === 'create') return 'Creer une partie'
-  return 'Online Lobby'
+  if (props.entryMode === 'join') return uiText.online.joinTitle
+  if (props.entryMode === 'create') return uiText.online.createTitle
+  return uiText.online.lobbyTitle
 })
 const showCreate = computed(() => props.entryMode !== 'join')
 const showJoin = computed(() => props.entryMode !== 'create')
@@ -190,11 +192,17 @@ const setRoomParam = (code) => {
   window.history.replaceState({}, '', url.toString())
 }
 
+const clearRoomParam = () => {
+  const url = new URL(window.location.href)
+  url.searchParams.delete('room')
+  window.history.replaceState({}, '', url.toString())
+}
+
 const fetchRoom = async () => {
   if (!supabaseReady || !roomId.value) return
   const { data, error } = await supabase.from('rooms').select('*').eq('id', roomId.value).single()
   if (error) {
-    errorMessage.value = 'Room not found.'
+    errorMessage.value = uiText.online.roomNotFound
     step.value = 'landing'
     return
   }
@@ -278,6 +286,18 @@ const stopPolling = () => {
   pollId = null
 }
 
+const cleanupChannels = () => {
+  if (roomChannel) {
+    supabase.removeChannel(roomChannel)
+    roomChannel = null
+  }
+  if (playersChannel) {
+    supabase.removeChannel(playersChannel)
+    playersChannel = null
+  }
+  stopPolling()
+}
+
 const createRoom = async () => {
   errorMessage.value = ''
   if (!supabaseReady) return
@@ -297,7 +317,7 @@ const createRoom = async () => {
     settings,
   })
   if (error) {
-    errorMessage.value = 'Unable to create room.'
+    errorMessage.value = 'Impossible de créer le salon.'
     return
   }
   roomId.value = code
@@ -320,14 +340,14 @@ const joinRoom = async () => {
   errorMessage.value = ''
   if (!supabaseReady || !roomId.value) return
   if (!trimmedName.value) {
-    errorMessage.value = 'Enter your name to join.'
+    errorMessage.value = 'Saisis ton pseudo pour rejoindre.'
     return
   }
   if (isBusy.value) return
   isBusy.value = true
   await fetchPlayers()
   if (players.value.length >= 8) {
-    errorMessage.value = 'Room is full.'
+    errorMessage.value = 'Le salon est complet.'
     isBusy.value = false
     return
   }
@@ -344,7 +364,7 @@ const joinRoom = async () => {
     { onConflict: 'room_id,player_id' }
   )
   if (error) {
-    errorMessage.value = 'Unable to join room.'
+    errorMessage.value = 'Impossible de rejoindre le salon.'
     isBusy.value = false
     return
   }
@@ -372,11 +392,34 @@ const startRoom = async () => {
     .eq('id', roomId.value)
 }
 
+const handleBack = async () => {
+  errorMessage.value = ''
+  if (step.value === 'lobby') {
+    cleanupChannels()
+    if (supabaseReady && roomId.value) {
+      const playerId = getPlayerId(roomId.value)
+      await supabase.from('players').delete().eq('room_id', roomId.value).eq('player_id', playerId)
+    }
+    step.value = 'name'
+    return
+  }
+  if (step.value === 'name' && !hasUrlRoomParam.value) {
+    clearRoomParam()
+    roomId.value = ''
+    step.value = 'landing'
+    return
+  }
+  cleanupChannels()
+  clearRoomParam()
+  emit('back')
+}
+
 onMounted(async () => {
   if (!supabaseReady) return
   const params = new URLSearchParams(window.location.search)
   const roomParam = params.get('room')
   if (roomParam) {
+    hasUrlRoomParam.value = true
     roomId.value = roomParam.toUpperCase()
     step.value = 'name'
     await fetchRoom()
@@ -401,13 +444,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
-  if (roomChannel) {
-    supabase.removeChannel(roomChannel)
-  }
-  if (playersChannel) {
-    supabase.removeChannel(playersChannel)
-  }
-  stopPolling()
+  cleanupChannels()
   if (durationUpdateId) {
     clearTimeout(durationUpdateId)
   }
