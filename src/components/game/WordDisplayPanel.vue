@@ -1,7 +1,7 @@
 <template>
   <main
     :class="[
-      'relative flex flex-col justify-center gap-2 overflow-hidden rounded-lg border bg-black/60 p-4 backdrop-blur-md transition-all duration-300 min-h-[12rem] sm:min-h-[14rem]',
+      'relative flex flex-col justify-center gap-1.5 overflow-hidden rounded-lg border bg-black/60 p-3 backdrop-blur-md transition-all duration-300 min-h-[9rem] sm:min-h-[13rem] sm:p-4',
       feverActive ? 'border-neon-magenta fever-glow' : 'border-neon-pink/70',
     ]"
   >

@@ -148,6 +148,16 @@
           <span>Bonus temps : <strong class="font-numbers text-neon-orange">+{{ speedBonus }}</strong></span>
         </div>
       </div>
+
+      <!-- Integrated Responsive Touch Keyboard (Mobile only) -->
+      <VirtualKeyboard
+        :disabled="disabled"
+        :hasLetters="Boolean(wordInput && wordInput.length > 0)"
+        @key="onVirtualKey"
+        @backspace="onVirtualBackspace"
+        @clear="onVirtualClear"
+        @submit="$emit('submit')"
+      />
     </div>
   </section>
 </template>
@@ -157,6 +167,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { sounds } from '../../lib/soundFx'
 import CyberIcon from '../ui/CyberIcon.vue'
 import AiAvatar from '../ui/AiAvatar.vue'
+import VirtualKeyboard from './VirtualKeyboard.vue'
 
 const props = defineProps({
   playerPoints: { type: Number, required: true },
@@ -196,6 +207,23 @@ const liveAnalysis = computed(() => {
 const onInput = (event) => {
   sounds.playKeypress()
   emit('update:wordInput', event.target.value)
+}
+
+const onVirtualKey = (letter) => {
+  sounds.playKeypress()
+  emit('update:wordInput', (props.wordInput || '') + letter)
+}
+
+const onVirtualBackspace = () => {
+  sounds.playKeypress()
+  if (props.wordInput && props.wordInput.length > 0) {
+    emit('update:wordInput', props.wordInput.slice(0, -1))
+  }
+}
+
+const onVirtualClear = () => {
+  sounds.playKeypress()
+  emit('update:wordInput', '')
 }
 
 // Global key focus handler: typing anywhere keeps the input active!

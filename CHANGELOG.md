@@ -1,5 +1,12 @@
 # Changelog
  
+## 0.8.0
+
+- Full 100% mobile compatibility: integrated touch-optimized virtual keyboard (AZERTY layout) with subtle haptic feedback.
+- Mobile UX optimization: adjusted viewport tags (`viewport-fit=cover`, prevent unwanted scaling zooms on input focus).
+- Responsive gameplay layout: word display and typing area prioritized on compact screens, with responsive bonus and word list heights.
+- Touch-friendly target sizes: minimum 44px tap targets for mobile usability across all menus and arcade buttons.
+
 ## 0.7.1
 
 - Replace all emojis with custom handcrafted SVG icons, cyber runes, and vector AI portraits.

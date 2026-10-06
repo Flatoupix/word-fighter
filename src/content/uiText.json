@@ -88,6 +88,15 @@
   },
   "changelog": [
     {
+      "version": "0.8.0",
+      "items": [
+        "Compatibilité mobile totale : clavier virtuel cyber tactile intégré (AZERTY) avec retour haptique.",
+        "Ergonomie tactile améliorée : boutons dimensionnés à 44px+ minimum, zones de tap confortables sans zoom indésirable.",
+        "Revue de la hiérarchie visuelle sur petit écran : zone de jeu et retour de frappe priorisés sur mobile.",
+        "Support PWA & plein écran mobile avec adaptation viewport-fit=cover et styles tactiles réactifs."
+      ]
+    },
+    {
       "version": "0.7.1",
       "items": [
         "Suppression totale des émojis au profit d'icônes vectorielles SVG sur-mesure et de portraits de robots stylisés.",

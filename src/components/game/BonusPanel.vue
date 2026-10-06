@@ -1,7 +1,7 @@
 <template>
   <aside class="rounded-md border border-neon-pink/70 bg-black/40 p-2 backdrop-blur-sm sm:p-3">
-    <h2 class="text-center font-display text-lg tracking-wide text-neon-yellow sm:text-xl md:text-2xl">Bonus</h2>
-    <div class="mt-3 space-y-2.5 text-center">
+    <h2 class="text-center font-display text-base tracking-wide text-neon-yellow sm:text-xl md:text-2xl">Bonus</h2>
+    <div class="mt-2 space-y-1.5 text-center sm:mt-3 sm:space-y-2.5">
       <div>
         <div
           :class="[

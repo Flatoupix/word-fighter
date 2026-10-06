@@ -271,6 +271,37 @@
       <polyline points="9 10 4 15 9 20" />
       <path d="M20 4v7a4 4 0 0 1-4 4H4" />
     </svg>
+
+    <!-- Backspace / Delete -->
+    <svg
+      v-else-if="name === 'backspace'"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="h-full w-full"
+    >
+      <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" fill="currentColor" fill-opacity="0.15" />
+      <line x1="18" y1="9" x2="12" y2="15" />
+      <line x1="12" y1="9" x2="18" y2="15" />
+    </svg>
+
+    <!-- Virtual Keyboard Toggle / Hide -->
+    <svg
+      v-else-if="name === 'keyboard'"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="h-full w-full"
+    >
+      <rect x="2" y="4" width="20" height="16" rx="2" fill="currentColor" fill-opacity="0.15" />
+      <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
+    </svg>
   </span>
 </template>
 
